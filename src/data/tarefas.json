@@ -1,0 +1,22 @@
+[
+  {
+    "processo": "Montagem do plano de estudos",
+    "categoria": "1. PLANEJAMENTO DE CAPABILIDADE DOS PROCESSOS DAS MÁQUINAS",
+    "gestao": 0,
+    "inovacao": 0,
+    "analise": 1,
+    "sistematizacao": 1,
+    "auxilio": 0,
+    "estruturaCargos": ["Analista CEP"]
+  },
+  {
+    "processo": "Montagem do plano com indices a serem obtidos",
+    "categoria": "1. PLANEJAMENTO DE CAPABILIDADE DOS PROCESSOS DAS MÁQUINAS",
+    "gestao": 0,
+    "inovacao": 0,
+    "analise": 1,
+    "sistematizacao": 1,
+    "auxilio": 0,
+    "estruturaCargos": ["Analista CEP"]
+  }
+]
