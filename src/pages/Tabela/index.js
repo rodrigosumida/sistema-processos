@@ -5,13 +5,13 @@ import { MaterialReactTable } from "material-react-table";
 import { Box, Button, Chip, IconButton, Tooltip } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 
-import dadosJson from "../../data/tarefas.json";
 import { ProcessTableModal } from "../../components/ProcessTableModal";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
+// import { BooleanCell } from "../../components/BooleanCell";
 
 const Tabela = () => {
-  const [tableData, setTableData] = useState(dadosJson);
+  const [tableData, setTableData] = useState({});
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
@@ -48,6 +48,7 @@ const Tabela = () => {
   const handleCloseModal = () => {
     setModalOpen(false);
     setModalType(null);
+    setProcesso({});
     getData();
   };
 
@@ -64,6 +65,17 @@ const Tabela = () => {
   };
 
   const columns = [
+    {
+      accessorKey: "area",
+      header: "Área",
+      muiTableHeadCellProps: {
+        sx: {
+          verticalAlign: "bottom",
+          paddingBottom: "8px",
+        },
+      },
+      Cell: ({ cell }) => cell.getValue()?.nome ?? "—",
+    },
     {
       accessorKey: "categoria",
       header: "Categoria",
@@ -89,30 +101,65 @@ const Tabela = () => {
       header: "Gestão",
       muiTableHeadCellProps: verticalHeaderStyle,
       size: 10,
+      Cell: ({ cell }) => {
+        return (
+          <div style={{ textAlign: "center" }}>
+            {cell.getValue() ? "x" : ""}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "inovacao",
       header: "Inovação/Impacto",
       muiTableHeadCellProps: verticalHeaderStyle,
       size: 10,
+      Cell: ({ cell }) => {
+        return (
+          <div style={{ textAlign: "center" }}>
+            {cell.getValue() ? "x" : ""}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "analise",
       header: "Análise",
       muiTableHeadCellProps: verticalHeaderStyle,
       size: 10,
+      Cell: ({ cell }) => {
+        return (
+          <div style={{ textAlign: "center" }}>
+            {cell.getValue() ? "x" : ""}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "sistematizacao",
       header: "Sistematização",
       muiTableHeadCellProps: verticalHeaderStyle,
       size: 10,
+      Cell: ({ cell }) => {
+        return (
+          <div style={{ textAlign: "center" }}>
+            {cell.getValue() ? "x" : ""}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "auxilio",
       header: "Auxílio",
       muiTableHeadCellProps: verticalHeaderStyle,
       size: 10,
+      Cell: ({ cell }) => {
+        return (
+          <div style={{ textAlign: "center" }}>
+            {cell.getValue() ? "x" : ""}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "estruturaCargos",
@@ -123,13 +170,22 @@ const Tabela = () => {
           paddingBottom: "8px",
         },
       },
-      Cell: ({ cell }) => (
-        <Box sx={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-          {cell.getValue()?.map((cargo, idx) => (
-            <Chip key={cargo._id || idx} label={cargo.nome} size="small" />
-          ))}
-        </Box>
-      ),
+      Cell: ({ cell }) => {
+        const valor = cell.getValue();
+        return (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            {valor?.map((item, idx) => (
+              <Chip
+                key={item._id || idx}
+                label={`${item.cargo?.nome ?? "Sem cargo"} (${
+                  item.responsavel?.nome ?? "Sem responsável"
+                })`}
+                size="small"
+              />
+            ))}
+          </Box>
+        );
+      },
     },
   ];
 

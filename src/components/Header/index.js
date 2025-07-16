@@ -61,6 +61,18 @@ export default function Header() {
             >
               Gráficos
             </MenuItem>
+            <MenuItem
+              style={{ borderLeft: "none" }}
+              onClick={() => navigate("/responsavel")}
+            >
+              Responsável
+            </MenuItem>
+            <MenuItem
+              style={{ borderLeft: "none" }}
+              onClick={() => navigate("/cargo")}
+            >
+              Cargo
+            </MenuItem>
           </SubMenu>
           <MenuItem
             style={{ background: "#ccc", borderLeft: "none" }}

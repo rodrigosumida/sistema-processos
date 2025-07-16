@@ -22,23 +22,38 @@ import { toast } from "react-toastify";
 
 export const ProcessTableModal = ({ open, onClose, type, processo }) => {
   const [values, setValues] = useState({
+    area: "",
     processo: "",
     categoria: "",
-    gestao: null,
-    inovacao: null,
-    analise: null,
-    sistematizacao: null,
-    auxilio: null,
+    gestao: false,
+    inovacao: false,
+    analise: false,
+    sistematizacao: false,
+    auxilio: false,
     estruturaCargos: [],
   });
-  const [cargoData, setCargoData] = useState({});
+  const [cargoData, setCargoData] = useState([]);
+  const [areaData, setAreaData] = useState([]);
 
   const [error, setError] = useState("");
 
   const getCargos = async () => {
     try {
-      const { data } = await api.get("/cargo");
+      const { data } = await api.get(
+        "/area-cargo-responsavel/area/6877b12eaa7ee8ff126abf26"
+      );
+      console.log(data);
       setCargoData(data);
+    } catch (err) {
+      console.log("Erro: ", err);
+      toast.error("Ocorreu um erro");
+    }
+  };
+
+  const getAreas = async () => {
+    try {
+      const { data } = await api.get("/area");
+      setAreaData(data);
     } catch (err) {
       console.log("Erro: ", err);
       toast.error("Ocorreu um erro");
@@ -47,6 +62,7 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
 
   const validate = (values) => {
     // Verifica se strings estão preenchidas (não vazias)
+    if (!values.area.trim()) return false;
     if (!values.processo.trim()) return false;
     if (!values.categoria.trim()) return false;
 
@@ -70,6 +86,7 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
 
   const handleSubmit = async () => {
     try {
+      console.log(values);
       setError("");
 
       if (!validate(values)) {
@@ -89,6 +106,7 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
 
   const handleEditSave = async () => {
     try {
+      console.log(values);
       setError("");
 
       if (!validate(values)) {
@@ -128,13 +146,14 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
 
   const resetValues = () => {
     setValues({
+      area: "",
       processo: "",
       categoria: "",
-      gestao: null,
-      inovacao: null,
-      analise: null,
-      sistematizacao: null,
-      auxilio: null,
+      gestao: false,
+      inovacao: false,
+      analise: false,
+      sistematizacao: false,
+      auxilio: false,
       estruturaCargos: [],
     });
   };
@@ -152,12 +171,13 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
   useEffect(() => {
     console.log("aaaa");
     getCargos();
+    getAreas();
   }, []);
 
   useEffect(() => {
     console.log("bbbb");
     if (!isEmpty(processo) && Array.isArray(cargoData) && cargoData.length > 0)
-      setValues(processo);
+      setValues({ ...processo, area: processo?.area._id });
   }, [type, processo, cargoData]);
 
   return (
@@ -181,6 +201,20 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
                 gap: "1.5rem",
               }}
             >
+              <InputContainer>
+                <label htmlFor="area">Área:</label>
+                <Autocomplete
+                  disablePortal
+                  options={areaData}
+                  getOptionLabel={(option) => option.nome || ""}
+                  value={areaData.find((a) => a._id === values.area) || null}
+                  disabled={type === "delete"}
+                  renderInput={(params) => <TextField {...params} />}
+                  onChange={(e, value) => {
+                    setValues({ ...values, area: value?._id || "" });
+                  }}
+                />
+              </InputContainer>
               <InputContainer>
                 <label htmlFor="categoria">Categoria:</label>
                 <TextField
@@ -263,12 +297,13 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
                   multiple
                   filterSelectedOptions
                   options={cargoData}
-                  getOptionLabel={(cargo) => cargo.nome}
+                  getOptionLabel={(item) => item.cargo?.nome || ""}
                   value={values.estruturaCargos}
                   disabled={type === "delete"}
                   renderInput={(params) => <TextField {...params} />}
                   onChange={(e, value) => {
-                    setValues({ ...values, estruturaCargos: value });
+                    setValues({ ...values, estruturaCargos: value || [] });
+                    setError("");
                   }}
                 />
               </InputContainer>
