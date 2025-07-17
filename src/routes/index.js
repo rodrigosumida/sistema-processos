@@ -7,6 +7,7 @@ import Page404 from "../pages/Page404";
 import Graficos from "../pages/Graficos";
 import Responsavel from "../pages/Responsavel";
 import Cargo from "../pages/Cargo";
+import Area from "../pages/Area";
 
 export default function Routess() {
   return (
@@ -15,6 +16,7 @@ export default function Routess() {
       <Route path="/graficos" element={<Graficos />} />
       <Route path="/responsavel" element={<Responsavel />} />
       <Route path="/cargo" element={<Cargo />} />
+      <Route path="/area" element={<Area />} />
       <Route path="*" element={<Page404 />} />
     </Routes>
   );

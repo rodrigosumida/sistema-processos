@@ -49,30 +49,40 @@ export default function Header() {
           }}
         >
           <SubMenu label="Dashboard" defaultOpen={true}>
-            <MenuItem
-              style={{ borderLeft: "none" }}
-              onClick={() => navigate("/")}
-            >
-              Tabela
-            </MenuItem>
-            <MenuItem
-              style={{ borderLeft: "none" }}
-              onClick={() => navigate("/graficos")}
-            >
-              Gráficos
-            </MenuItem>
-            <MenuItem
-              style={{ borderLeft: "none" }}
-              onClick={() => navigate("/responsavel")}
-            >
-              Responsável
-            </MenuItem>
-            <MenuItem
-              style={{ borderLeft: "none" }}
-              onClick={() => navigate("/cargo")}
-            >
-              Cargo
-            </MenuItem>
+            <SubMenu defaultOpen={true}>
+              <MenuItem
+                style={{ borderLeft: "none" }}
+                onClick={() => navigate("/")}
+              >
+                Tabela
+              </MenuItem>
+              <MenuItem
+                style={{ borderLeft: "none" }}
+                onClick={() => navigate("/graficos")}
+              >
+                Gráficos
+              </MenuItem>
+            </SubMenu>
+            <SubMenu defaultOpen={true}>
+              <MenuItem
+                style={{ borderLeft: "none" }}
+                onClick={() => navigate("/area")}
+              >
+                Area
+              </MenuItem>
+              <MenuItem
+                style={{ borderLeft: "none" }}
+                onClick={() => navigate("/cargo")}
+              >
+                Cargo
+              </MenuItem>
+              <MenuItem
+                style={{ borderLeft: "none" }}
+                onClick={() => navigate("/responsavel")}
+              >
+                Responsável
+              </MenuItem>
+            </SubMenu>
           </SubMenu>
           <MenuItem
             style={{ background: "#ccc", borderLeft: "none" }}
