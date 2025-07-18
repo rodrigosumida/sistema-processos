@@ -4,12 +4,17 @@ import { BoxGrafico, Container, ContainerGraficos } from "./styled";
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
 import { Button } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { mudarHeader } from "../../store/modules/header/actions";
 
 const Graficos = () => {
   const [rawData, setRawData] = useState([]);
 
   const [totalAtributos, setTotalAtributos] = useState({});
   const [total, setTotal] = useState(null);
+
+  const dispatch = useDispatch();
+  dispatch(mudarHeader("Graficos"));
 
   const getData = async () => {
     const { data } = await api.get("/processo");

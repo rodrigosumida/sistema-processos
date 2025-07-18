@@ -1,6 +1,6 @@
 import React from "react";
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import * as actions from "../../store/modules/auth/actions";
 
@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 export default function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const pagina = useSelector((state) => state.header.pagina);
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -53,12 +55,18 @@ export default function Header() {
               <MenuItem
                 style={{ borderLeft: "none" }}
                 onClick={() => navigate("/")}
+                rootStyles={{
+                  background: pagina === "Tabela" ? "#eee" : undefined,
+                }}
               >
                 Tabela
               </MenuItem>
               <MenuItem
                 style={{ borderLeft: "none" }}
                 onClick={() => navigate("/graficos")}
+                rootStyles={{
+                  background: pagina === "Graficos" ? "#eee" : undefined,
+                }}
               >
                 Gráficos
               </MenuItem>
@@ -67,18 +75,27 @@ export default function Header() {
               <MenuItem
                 style={{ borderLeft: "none" }}
                 onClick={() => navigate("/area")}
+                rootStyles={{
+                  background: pagina === "Area" ? "#eee" : undefined,
+                }}
               >
                 Area
               </MenuItem>
               <MenuItem
                 style={{ borderLeft: "none" }}
                 onClick={() => navigate("/cargo")}
+                rootStyles={{
+                  background: pagina === "Cargo" ? "#eee" : undefined,
+                }}
               >
                 Cargo
               </MenuItem>
               <MenuItem
                 style={{ borderLeft: "none" }}
                 onClick={() => navigate("/responsavel")}
+                rootStyles={{
+                  background: pagina === "Responsavel" ? "#eee" : undefined,
+                }}
               >
                 Responsável
               </MenuItem>

@@ -20,7 +20,13 @@ import { LevelInput } from "../LevelInput";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 
-export const ProcessTableModal = ({ open, onClose, type, processo }) => {
+export const ProcessTableModal = ({
+  open,
+  onClose,
+  type,
+  processo,
+  selectedArea,
+}) => {
   const [values, setValues] = useState({
     area: "",
     processo: "",
@@ -39,10 +45,8 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
 
   const getCargos = async () => {
     try {
-      const { data } = await api.get(
-        "/area-cargo-responsavel/area/6877b12eaa7ee8ff126abf26"
-      );
-      console.log(data);
+      const { data } = await api.get(`/area-cargo-responsavel`);
+      console.log("acr", data);
       setCargoData(data);
     } catch (err) {
       console.log("Erro: ", err);
@@ -175,10 +179,19 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
   }, []);
 
   useEffect(() => {
+    if (selectedArea && type === "create") {
+      console.log("nbsdv");
+      setValues((prev) => ({ ...prev, area: selectedArea._id }));
+    }
+  }, [selectedArea, areaData, type]);
+
+  useEffect(() => {
     console.log("bbbb");
     if (!isEmpty(processo) && Array.isArray(cargoData) && cargoData.length > 0)
       setValues({ ...processo, area: processo?.area._id });
   }, [type, processo, cargoData]);
+
+  const filteredCargos = cargoData.filter((c) => c.area?._id === values.area);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
@@ -211,7 +224,11 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
                   disabled={type === "delete"}
                   renderInput={(params) => <TextField {...params} />}
                   onChange={(e, value) => {
-                    setValues({ ...values, area: value?._id || "" });
+                    setValues({
+                      ...values,
+                      area: value?._id || "",
+                      estruturaCargos: [], // zera os cargos ao trocar de área
+                    });
                   }}
                 />
               </InputContainer>
@@ -291,12 +308,12 @@ export const ProcessTableModal = ({ open, onClose, type, processo }) => {
                 </LevelContainer>
               </LevelsContainer>
               <InputContainer>
-                <label htmlFor="technologies">Estrutura de Cargos:</label>
+                <label htmlFor="cargo">Estrutura de Cargos:</label>
                 <Autocomplete
                   disablePortal
                   multiple
                   filterSelectedOptions
-                  options={cargoData}
+                  options={filteredCargos}
                   getOptionLabel={(item) => item.cargo?.nome || ""}
                   value={values.estruturaCargos}
                   disabled={type === "delete"}

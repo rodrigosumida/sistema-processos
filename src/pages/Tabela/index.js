@@ -1,31 +1,73 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
-import { Container, ContainerTable } from "./styled";
+import { Container, ContainerAreaInput, ContainerTable } from "./styled";
 import { MaterialReactTable } from "material-react-table";
-import { Box, Button, Chip, IconButton, Tooltip } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 
 import { ProcessTableModal } from "../../components/ProcessTableModal";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { mudarHeader } from "../../store/modules/header/actions";
 // import { BooleanCell } from "../../components/BooleanCell";
 
 const Tabela = () => {
-  const [tableData, setTableData] = useState({});
+  const [tableData, setTableData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+
+  const [areaData, setAreaData] = useState([]);
+  const [selectedArea, setSelectedArea] = useState({});
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
 
   const [processo, setProcesso] = useState({});
 
+  const dispatch = useDispatch();
+  dispatch(mudarHeader("Tabela"));
+
   const getData = async () => {
     try {
-      const { data } = await api.get("/processo");
-      console.log(data);
-      setTableData(data);
+      const { data: areas } = await api.get("/area");
+      setAreaData(areas);
+
+      const { data: processos } = await api.get("/processo");
+      setTableData(processos);
+
+      if (!selectedArea || !selectedArea._id) {
+        const defaultArea = areas[0];
+        setSelectedArea(defaultArea);
+
+        const filtered = processos.filter(
+          (item) => item.area?._id === defaultArea?._id
+        );
+        setFilteredData(filtered);
+      } else {
+        const filtered = processos.filter(
+          (item) => item.area?._id === selectedArea._id
+        );
+        setFilteredData(filtered);
+      }
+      console.log("DONE");
     } catch (err) {
       toast.error("Ocorreu um erro!");
     }
+  };
+
+  const handleChangeArea = (value) => {
+    setSelectedArea(value || {});
+
+    const data = tableData.filter((item) => item.area?._id === value._id);
+    setFilteredData(data);
   };
 
   const handleAddClick = () => {
@@ -192,12 +234,23 @@ const Tabela = () => {
   useEffect(() => {
     getData();
     console.log("FOI");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Container>
       <Header />
       <ContainerTable>
+        <ContainerAreaInput>
+          <Autocomplete
+            disablePortal
+            options={areaData}
+            getOptionLabel={(option) => option.nome || ""}
+            value={areaData.find((a) => a._id === selectedArea._id) || null}
+            renderInput={(params) => <TextField {...params} />}
+            onChange={(e, value) => handleChangeArea(value)}
+          />
+        </ContainerAreaInput>
         <MaterialReactTable
           enableRowActions
           displayColumnDefOptions={{
@@ -213,7 +266,7 @@ const Tabela = () => {
             },
           }}
           columns={columns}
-          data={tableData}
+          data={filteredData}
           initialState={{ density: "compact" }}
           renderRowActions={({ row, table }) => (
             <Box
@@ -265,6 +318,7 @@ const Tabela = () => {
         onClose={handleCloseModal}
         type={modalType}
         processo={processo}
+        selectedArea={selectedArea}
       />
     </Container>
   );

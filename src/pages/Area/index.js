@@ -4,10 +4,12 @@ import { Container, ContainerTable } from "./styled";
 import { MaterialReactTable } from "material-react-table";
 import { Box, Button, Chip, IconButton, Tooltip } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
+import { mudarHeader } from "../../store/modules/header/actions";
 
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 import { AreaTableModal } from "../../components/AreaTableModal";
+import { useDispatch } from "react-redux";
 
 const Area = () => {
   const [tableData, setTableData] = useState({});
@@ -16,6 +18,9 @@ const Area = () => {
   const [modalType, setModalType] = useState(null);
 
   const [area, setArea] = useState({});
+
+  const dispatch = useDispatch();
+  dispatch(mudarHeader("Area"));
 
   const getData = async () => {
     try {

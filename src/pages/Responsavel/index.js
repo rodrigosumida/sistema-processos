@@ -8,6 +8,8 @@ import { Delete, Edit } from "@mui/icons-material";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 import { DefaultTableModal } from "../../components/DefaultTableModal";
+import { useDispatch } from "react-redux";
+import { mudarHeader } from "../../store/modules/header/actions";
 // import { BooleanCell } from "../../components/BooleanCell";
 
 const Responsavel = () => {
@@ -17,6 +19,9 @@ const Responsavel = () => {
   const [modalType, setModalType] = useState(null);
 
   const [responsavel, setResponsavel] = useState({});
+
+  const dispatch = useDispatch();
+  dispatch(mudarHeader("Responsavel"));
 
   const getData = async () => {
     try {
