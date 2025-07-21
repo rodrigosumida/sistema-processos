@@ -13,3 +13,7 @@ export const ContainerTable = styled.div`
 export const ContainerAreaInput = styled.div`
   padding: 20px 10px;
 `;
+
+export const ContainerCheckCell = styled.div`
+  text-align: center;
+`;

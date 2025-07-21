@@ -1,7 +1,8 @@
-export const LOGIN_REQUEST = 'LOGIN_REQUEST';
-export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
-export const LOGIN_FAILURE = 'LOGIN_FAILURE';
+export const LOGIN_REQUEST = "LOGIN_REQUEST";
+export const LOGIN_SUCCESS = "LOGIN_SUCCESS";
+export const LOGIN_FAILURE = "LOGIN_FAILURE";
 
-export const MUDAR_HEADER = 'MUDAR_HEADER';
+export const MUDAR_HEADER = "MUDAR_HEADER";
+export const COMPACT_HEADER = "COMPACT_HEADER";
 
-export const PERSIST_REHYDRATE = 'persist/REHYDRATE';
+export const PERSIST_REHYDRATE = "persist/REHYDRATE";

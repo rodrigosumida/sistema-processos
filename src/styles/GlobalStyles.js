@@ -72,3 +72,8 @@ export const ErroContainer = styled.div`
   font-size: 15px;
   align-self: start;
 `;
+
+export const ContentContainer = styled.div`
+  margin-left: ${(props) => (props.compact ? "90px" : "280px")};
+  transition: margin-left 0.3s ease;
+`;

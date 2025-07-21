@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
-import { Container, ContainerAreaInput, ContainerTable } from "./styled";
+import { Container, ContainerAreaInput, ContainerCheckCell } from "./styled";
 import { MaterialReactTable } from "material-react-table";
 import {
   Autocomplete,
@@ -16,8 +16,9 @@ import { Delete, Edit } from "@mui/icons-material";
 import { ProcessTableModal } from "../../components/ProcessTableModal";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { mudarHeader } from "../../store/modules/header/actions";
+import { ContentContainer } from "../../styles/GlobalStyles";
 // import { BooleanCell } from "../../components/BooleanCell";
 
 const Tabela = () => {
@@ -34,6 +35,8 @@ const Tabela = () => {
 
   const dispatch = useDispatch();
   dispatch(mudarHeader("Tabela"));
+
+  const compact = useSelector((state) => state.header.compact);
 
   const getData = async () => {
     try {
@@ -108,19 +111,8 @@ const Tabela = () => {
 
   const columns = [
     {
-      accessorKey: "area",
-      header: "Área",
-      muiTableHeadCellProps: {
-        sx: {
-          verticalAlign: "bottom",
-          paddingBottom: "8px",
-        },
-      },
-      Cell: ({ cell }) => cell.getValue()?.nome ?? "—",
-    },
-    {
       accessorKey: "categoria",
-      header: "Categoria",
+      header: "Macroprocesso",
       muiTableHeadCellProps: {
         sx: {
           verticalAlign: "bottom",
@@ -145,9 +137,7 @@ const Tabela = () => {
       size: 10,
       Cell: ({ cell }) => {
         return (
-          <div style={{ textAlign: "center" }}>
-            {cell.getValue() ? "x" : ""}
-          </div>
+          <ContainerCheckCell>{cell.getValue() ? "x" : ""}</ContainerCheckCell>
         );
       },
     },
@@ -158,9 +148,7 @@ const Tabela = () => {
       size: 10,
       Cell: ({ cell }) => {
         return (
-          <div style={{ textAlign: "center" }}>
-            {cell.getValue() ? "x" : ""}
-          </div>
+          <ContainerCheckCell>{cell.getValue() ? "x" : ""}</ContainerCheckCell>
         );
       },
     },
@@ -171,9 +159,7 @@ const Tabela = () => {
       size: 10,
       Cell: ({ cell }) => {
         return (
-          <div style={{ textAlign: "center" }}>
-            {cell.getValue() ? "x" : ""}
-          </div>
+          <ContainerCheckCell>{cell.getValue() ? "x" : ""}</ContainerCheckCell>
         );
       },
     },
@@ -184,9 +170,7 @@ const Tabela = () => {
       size: 10,
       Cell: ({ cell }) => {
         return (
-          <div style={{ textAlign: "center" }}>
-            {cell.getValue() ? "x" : ""}
-          </div>
+          <ContainerCheckCell>{cell.getValue() ? "x" : ""}</ContainerCheckCell>
         );
       },
     },
@@ -197,9 +181,7 @@ const Tabela = () => {
       size: 10,
       Cell: ({ cell }) => {
         return (
-          <div style={{ textAlign: "center" }}>
-            {cell.getValue() ? "x" : ""}
-          </div>
+          <ContainerCheckCell>{cell.getValue() ? "x" : ""}</ContainerCheckCell>
         );
       },
     },
@@ -240,7 +222,7 @@ const Tabela = () => {
   return (
     <Container>
       <Header />
-      <ContainerTable>
+      <ContentContainer compact={compact}>
         <ContainerAreaInput>
           <Autocomplete
             disablePortal
@@ -253,6 +235,14 @@ const Tabela = () => {
         </ContainerAreaInput>
         <MaterialReactTable
           enableRowActions
+          enableGrouping
+          enablePagination={false}
+          columns={columns}
+          data={filteredData}
+          initialState={{
+            grouping: ["categoria"],
+            density: "compact",
+          }}
           displayColumnDefOptions={{
             "mrt-row-actions": {
               size: 120,
@@ -265,9 +255,28 @@ const Tabela = () => {
               },
             },
           }}
-          columns={columns}
-          data={filteredData}
-          initialState={{ density: "compact" }}
+          positionActionsColumn="last"
+          muiTableBodyCellProps={({ cell }) => {
+            const colunasComEstilo = [
+              "gestao",
+              "inovacao",
+              "analise",
+              "sistematizacao",
+              "auxilio",
+            ];
+
+            if (colunasComEstilo.includes(cell.column.id)) {
+              return {
+                sx: {
+                  borderLeft: "1px solid rgba(224, 224, 224, 1)",
+                  borderRight: "1px solid rgba(224, 224, 224, 1)",
+                },
+              };
+            }
+
+            return {};
+          }}
+          rowGroupingExpandMode="multiple"
           renderRowActions={({ row, table }) => (
             <Box
               sx={{
@@ -312,7 +321,7 @@ const Tabela = () => {
             </Box>
           )}
         />
-      </ContainerTable>
+      </ContentContainer>
       <ProcessTableModal
         open={modalOpen}
         onClose={handleCloseModal}

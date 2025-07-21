@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
-import { Container, ContainerTable } from "./styled";
+import { Container } from "./styled";
 import { MaterialReactTable } from "material-react-table";
 import { Box, Button, Chip, IconButton, Tooltip } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
@@ -9,7 +9,8 @@ import { mudarHeader } from "../../store/modules/header/actions";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 import { AreaTableModal } from "../../components/AreaTableModal";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { ContentContainer } from "../../styles/GlobalStyles";
 
 const Area = () => {
   const [tableData, setTableData] = useState({});
@@ -21,6 +22,8 @@ const Area = () => {
 
   const dispatch = useDispatch();
   dispatch(mudarHeader("Area"));
+
+  const compact = useSelector((state) => state.header.compact);
 
   const getData = async () => {
     try {
@@ -97,7 +100,7 @@ const Area = () => {
   return (
     <Container>
       <Header />
-      <ContainerTable>
+      <ContentContainer compact={compact}>
         <MaterialReactTable
           enableRowActions
           displayColumnDefOptions={{
@@ -153,7 +156,7 @@ const Area = () => {
             </Box>
           )}
         />
-      </ContainerTable>
+      </ContentContainer>
       <AreaTableModal
         open={modalOpen}
         onClose={handleCloseModal}

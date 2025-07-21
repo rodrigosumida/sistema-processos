@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
-import { Container, ContainerTable } from "./styled";
+import { Container } from "./styled";
 import { MaterialReactTable } from "material-react-table";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
@@ -8,8 +8,9 @@ import { Delete, Edit } from "@mui/icons-material";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 import { DefaultTableModal } from "../../components/DefaultTableModal";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { mudarHeader } from "../../store/modules/header/actions";
+import { ContentContainer } from "../../styles/GlobalStyles";
 // import { BooleanCell } from "../../components/BooleanCell";
 
 const Cargo = () => {
@@ -22,6 +23,8 @@ const Cargo = () => {
 
   const dispatch = useDispatch();
   dispatch(mudarHeader("Cargo"));
+
+  const compact = useSelector((state) => state.header.compact);
 
   const getData = async () => {
     try {
@@ -78,7 +81,7 @@ const Cargo = () => {
   return (
     <Container>
       <Header />
-      <ContainerTable>
+      <ContentContainer compact={compact}>
         <MaterialReactTable
           enableRowActions
           displayColumnDefOptions={{
@@ -134,7 +137,7 @@ const Cargo = () => {
             </Box>
           )}
         />
-      </ContainerTable>
+      </ContentContainer>
       <DefaultTableModal
         open={modalOpen}
         onClose={handleCloseModal}

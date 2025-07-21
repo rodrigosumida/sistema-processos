@@ -1,14 +1,24 @@
 import { BarChart, PieChart } from "@mui/x-charts";
 import Header from "../../components/Header";
-import { BoxGrafico, Container, ContainerGraficos } from "./styled";
+import {
+  BoxGrafico,
+  Container,
+  ContainerAreaInput,
+  ContainerGraficos,
+} from "./styled";
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
-import { Button } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { Autocomplete, TextField } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
 import { mudarHeader } from "../../store/modules/header/actions";
+import { ContentContainer } from "../../styles/GlobalStyles";
 
 const Graficos = () => {
   const [rawData, setRawData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+
+  const [areaData, setAreaData] = useState([]);
+  const [selectedArea, setSelectedArea] = useState(null);
 
   const [totalAtributos, setTotalAtributos] = useState({});
   const [total, setTotal] = useState(null);
@@ -16,10 +26,31 @@ const Graficos = () => {
   const dispatch = useDispatch();
   dispatch(mudarHeader("Graficos"));
 
+  const compact = useSelector((state) => state.header.compact);
+
   const getData = async () => {
     const { data } = await api.get("/processo");
     setRawData(data);
-    calcularTotais(data);
+
+    const { data: areas } = await api.get("/area");
+    setAreaData(areas);
+
+    if (!selectedArea || !selectedArea._id) {
+      const defaultArea = areas[0];
+      setSelectedArea(defaultArea);
+
+      const filtered = data.filter(
+        (item) => item.area?._id === defaultArea?._id
+      );
+      setFilteredData(filtered);
+      calcularTotais(filtered);
+    } else {
+      const filtered = data.filter(
+        (item) => item.area?._id === selectedArea._id
+      );
+      setFilteredData(filtered);
+      calcularTotais(filtered);
+    }
   };
 
   const calcularTotais = (dados) => {
@@ -83,7 +114,9 @@ const Graficos = () => {
       } = item;
 
       item.estruturaCargos.forEach((cargo) => {
-        const nome = cargo.nome;
+        console.log(cargo);
+        // const nome = `${cargo.cargo?.nome} (${cargo.responsavel?.nome})`;
+        const nome = cargo.responsavel?.nome;
         if (!mapa[nome]) {
           mapa[nome] = {
             gestao: 0,
@@ -123,6 +156,14 @@ const Graficos = () => {
     });
   };
 
+  const handleChangeArea = (value) => {
+    setSelectedArea(value || {});
+
+    const data = rawData.filter((item) => item.area?._id === value._id);
+    setFilteredData(data);
+    calcularTotais(data);
+  };
+
   useEffect(() => {
     console.log("asd");
     getData();
@@ -132,70 +173,83 @@ const Graficos = () => {
   return (
     <Container>
       <Header />
-      <ContainerGraficos>
-        <Button
-          onClick={() => console.log(gerarDadosCargosComPorcentagem(rawData))}
-        >
-          asdadasda
-        </Button>
-        <BoxGrafico>
-          <PieChart
-            series={[
-              {
-                arcLabel: (item) => `${item.percentual}%`,
-                arcLabelMinAngle: 35,
-                arcLabelRadius: "60%",
-                data: gerarDadosAtributosComPorcentagem(),
+      <ContentContainer compact={compact}>
+        <ContainerAreaInput>
+          <Autocomplete
+            disablePortal
+            disableClearable
+            options={areaData}
+            getOptionLabel={(option) => option.nome || ""}
+            value={areaData.find((a) => a._id === selectedArea._id) || null}
+            renderInput={(params) => <TextField {...params} />}
+            sx={{
+              ":hover": {
+                cursor: "pointer",
               },
-            ]}
+            }}
+            onChange={(e, value) => handleChangeArea(value)}
           />
-        </BoxGrafico>
-        <BoxGrafico>
-          <BarChart
-            dataset={gerarDadosCargosComPorcentagem(rawData)}
-            xAxis={[{ scaleType: "band", dataKey: "nome", label: "Cargo" }]}
-            yAxis={[{ label: "Porcentagem (%)" }]}
-            grid={{ horizontal: true }}
-            series={[
-              {
-                dataKey: "gestao",
-                label: "Gestão",
-                stack: "total",
-                color: "#ff9900",
-                valueFormatter: (v) => `${v.toFixed(1)}%`,
-              },
-              {
-                dataKey: "inovacao",
-                label: "Inovação",
-                stack: "total",
-                color: "#a50021",
-                valueFormatter: (v) => `${v.toFixed(1)}%`,
-              },
-              {
-                dataKey: "analise",
-                label: "Análise",
-                stack: "total",
-                color: "#9999ff",
-                valueFormatter: (v) => `${v.toFixed(1)}%`,
-              },
-              {
-                dataKey: "sistematizacao",
-                label: "Sistematização",
-                stack: "total",
-                color: "#669900",
-                valueFormatter: (v) => `${v.toFixed(1)}%`,
-              },
-              {
-                dataKey: "auxilio",
-                label: "Auxílio",
-                stack: "total",
-                color: "#ffff00",
-                valueFormatter: (v) => `${v.toFixed(1)}%`,
-              },
-            ]}
-          />
-        </BoxGrafico>
-      </ContainerGraficos>
+        </ContainerAreaInput>
+        <ContainerGraficos>
+          <BoxGrafico>
+            <PieChart
+              series={[
+                {
+                  arcLabel: (item) => `${item.percentual}%`,
+                  arcLabelMinAngle: 35,
+                  arcLabelRadius: "60%",
+                  data: gerarDadosAtributosComPorcentagem(),
+                },
+              ]}
+            />
+          </BoxGrafico>
+          <BoxGrafico>
+            <BarChart
+              dataset={gerarDadosCargosComPorcentagem(filteredData)}
+              xAxis={[{ scaleType: "band", dataKey: "nome", label: "Cargo" }]}
+              yAxis={[{ label: "Porcentagem (%)" }]}
+              grid={{ horizontal: true }}
+              series={[
+                {
+                  dataKey: "gestao",
+                  label: "Gestão",
+                  stack: "total",
+                  color: "#ff9900",
+                  valueFormatter: (v) => `${v.toFixed(1)}%`,
+                },
+                {
+                  dataKey: "inovacao",
+                  label: "Inovação",
+                  stack: "total",
+                  color: "#a50021",
+                  valueFormatter: (v) => `${v.toFixed(1)}%`,
+                },
+                {
+                  dataKey: "analise",
+                  label: "Análise",
+                  stack: "total",
+                  color: "#9999ff",
+                  valueFormatter: (v) => `${v.toFixed(1)}%`,
+                },
+                {
+                  dataKey: "sistematizacao",
+                  label: "Sistematização",
+                  stack: "total",
+                  color: "#669900",
+                  valueFormatter: (v) => `${v.toFixed(1)}%`,
+                },
+                {
+                  dataKey: "auxilio",
+                  label: "Auxílio",
+                  stack: "total",
+                  color: "#ffff00",
+                  valueFormatter: (v) => `${v.toFixed(1)}%`,
+                },
+              ]}
+            />
+          </BoxGrafico>
+        </ContainerGraficos>
+      </ContentContainer>
     </Container>
   );
 };

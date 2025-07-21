@@ -3,19 +3,28 @@ import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useDispatch, useSelector } from "react-redux";
 
 import * as actions from "../../store/modules/auth/actions";
+import * as headerActions from "../../store/modules/header/actions";
 
 import { Nav } from "../../styles/GlobalStyles";
 import { useNavigate } from "react-router-dom";
+
+import MenuIcon from "@mui/icons-material/Menu";
+import { IconContainer } from "./styled";
 
 export default function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const pagina = useSelector((state) => state.header.pagina);
+  const compact = useSelector((state) => state.header.compact);
 
   const handleLogout = (e) => {
     e.preventDefault();
     dispatch(actions.loginFailure());
+  };
+
+  const handleCompact = () => {
+    dispatch(headerActions.compactHeader());
   };
 
   return (
@@ -30,13 +39,18 @@ export default function Header() {
         }}
       />
       <Sidebar
+        collapsed={compact}
         style={{
           height: "100vh",
           borderRadius: "7px",
           background: "#eee",
-          width: "270px",
+          width: compact ? "80px" : "270px",
         }}
       >
+        <IconContainer onClick={handleCompact}>
+          <MenuIcon />
+        </IconContainer>
+
         <Menu
           menuItemStyles={{
             root: {
