@@ -231,7 +231,7 @@ export const ProcessTableModal = ({
                 />
               </InputContainer>
               <InputContainer>
-                <label htmlFor="categoria">Categoria:</label>
+                <label htmlFor="categoria">Macroprocesso:</label>
                 <TextField
                   id="categoria"
                   name="categoria"
