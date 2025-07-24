@@ -211,9 +211,11 @@ export const AreaTableModal = ({ open, onClose, type, item }) => {
         } área${
           type === "delete" ? "? (Essa ação é irreversível)" : ""
         }`}</DialogTitle>
-        <WarningText>
-          ATENÇÃO! TODOS OS PROCESSOS DESSA ÁREA TAMBÉM SERÃO EXCLUÍDOS
-        </WarningText>
+        {type === "delete" && (
+          <WarningText>
+            ATENÇÃO! TODOS OS PROCESSOS DESSA ÁREA TAMBÉM SERÃO EXCLUÍDOS
+          </WarningText>
+        )}
         <DialogContent>
           <Form>
             <Stack

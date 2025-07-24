@@ -274,7 +274,7 @@ const Tabela = () => {
             },
           }}
           positionActionsColumn="last"
-          muiTableBodyCellProps={({ cell }) => {
+          muiTableBodyCellProps={({ cell, row }) => {
             const colunasComEstilo = [
               "gestao",
               "inovacao",
@@ -283,7 +283,10 @@ const Tabela = () => {
               "auxilio",
             ];
 
-            if (colunasComEstilo.includes(cell.column.id)) {
+            if (
+              !row.getIsGrouped() &&
+              colunasComEstilo.includes(cell.column.id)
+            ) {
               return {
                 sx: {
                   borderLeft: "1px solid rgba(224, 224, 224, 1)",
