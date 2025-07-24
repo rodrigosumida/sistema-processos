@@ -131,6 +131,24 @@ const Tabela = () => {
       },
     },
     {
+      accessorKey: "tempoGasto",
+      header: "Tempo",
+      size: 10,
+      muiTableHeadCellProps: {
+        sx: {
+          verticalAlign: "bottom",
+          paddingBottom: "8px",
+        },
+      },
+      Cell: ({ cell }) => {
+        return (
+          <ContainerCheckCell>
+            {cell.getValue() ? `${cell.getValue()} horas` : ""}
+          </ContainerCheckCell>
+        );
+      },
+    },
+    {
       accessorKey: "gestao",
       header: "Gestão",
       muiTableHeadCellProps: verticalHeaderStyle,

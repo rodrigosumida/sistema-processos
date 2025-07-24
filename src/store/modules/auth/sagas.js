@@ -6,12 +6,10 @@ import api from "../../../api/axios";
 
 function* loginRequest({ payload }) {
   try {
-    const response = yield call(api.post, "/token/inserir", payload);
+    const response = yield call(api.post, "/token/insert", payload);
     yield put(
       actions.loginSuccess({
         ...response.data,
-        permissao: payload.permissao,
-        email: payload.email,
       })
     );
 

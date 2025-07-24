@@ -11,7 +11,7 @@ import {
   TextField,
 } from "@mui/material";
 import { ErroContainer, Form } from "../../styles/GlobalStyles";
-import { ContainerBotoes, InputContainer } from "./styled";
+import { ContainerBotoes, InputContainer, WarningText } from "./styled";
 
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -130,7 +130,7 @@ export const AreaTableModal = ({ open, onClose, type, item }) => {
     try {
       setError("");
 
-      await api.delete(`/area-cargo-responsavel/${item._id}`);
+      await api.delete(`/area/${item.area?._id}`);
 
       resetValues();
       onClose();
@@ -211,6 +211,9 @@ export const AreaTableModal = ({ open, onClose, type, item }) => {
         } área${
           type === "delete" ? "? (Essa ação é irreversível)" : ""
         }`}</DialogTitle>
+        <WarningText>
+          ATENÇÃO! TODOS OS PROCESSOS DESSA ÁREA TAMBÉM SERÃO EXCLUÍDOS
+        </WarningText>
         <DialogContent>
           <Form>
             <Stack

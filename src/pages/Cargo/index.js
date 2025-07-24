@@ -7,7 +7,7 @@ import { Delete, Edit } from "@mui/icons-material";
 
 import api from "../../api/axios";
 import { toast } from "react-toastify";
-import { DefaultTableModal } from "../../components/DefaultTableModal";
+import { CargoTableModal } from "../../components/CargoTableModal";
 import { useDispatch, useSelector } from "react-redux";
 import { mudarHeader } from "../../store/modules/header/actions";
 import { ContentContainer } from "../../styles/GlobalStyles";
@@ -69,6 +69,21 @@ const Cargo = () => {
           verticalAlign: "bottom",
           paddingBottom: "8px",
         },
+      },
+    },
+    {
+      accessorKey: "salario",
+      header: "Salário",
+      muiTableHeadCellProps: {
+        sx: {
+          verticalAlign: "bottom",
+          paddingBottom: "8px",
+        },
+      },
+      Cell: ({ cell }) => {
+        return cell.getValue()
+          ? `R$ ${String(cell.getValue().toFixed(2)).replace(".", ",")}`
+          : "";
       },
     },
   ];
@@ -138,7 +153,7 @@ const Cargo = () => {
           )}
         />
       </ContentContainer>
-      <DefaultTableModal
+      <CargoTableModal
         open={modalOpen}
         onClose={handleCloseModal}
         type={modalType}

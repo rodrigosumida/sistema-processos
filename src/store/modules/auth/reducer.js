@@ -3,8 +3,6 @@ import * as types from "../types";
 const initialState = {
   isLoggedIn: false,
   token: false,
-  permissao: 0,
-  email: "",
 };
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -14,8 +12,6 @@ export default function (state = initialState, action) {
       const newState = { ...state };
       newState.isLoggedIn = true;
       newState.token = action.payload.token;
-      newState.permissao = action.payload.permissao;
-      newState.email = action.payload.email;
       return newState;
     }
 

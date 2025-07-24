@@ -76,4 +76,8 @@ export const ErroContainer = styled.div`
 export const ContentContainer = styled.div`
   margin-left: ${(props) => (props.compact ? "90px" : "280px")};
   transition: margin-left 0.3s ease;
+
+  position: relative;
+  z-index: 1;
+  overflow: visible;
 `;

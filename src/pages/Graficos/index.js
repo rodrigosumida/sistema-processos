@@ -116,7 +116,7 @@ const Graficos = () => {
       item.estruturaCargos.forEach((cargo) => {
         console.log(cargo);
         // const nome = `${cargo.cargo?.nome} (${cargo.responsavel?.nome})`;
-        const nome = cargo.responsavel?.nome;
+        const nome = cargo.cargo?.nome;
         if (!mapa[nome]) {
           mapa[nome] = {
             gestao: 0,

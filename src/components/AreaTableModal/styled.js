@@ -13,3 +13,10 @@ export const ContainerBotoes = styled.div`
   justify-content: flex-end;
   gap: 8px;
 `;
+
+export const WarningText = styled.span`
+  font-weight: bold;
+  font-size: 1.75rem;
+  text-align: center;
+  padding: 0 15px;
+`;

@@ -31,6 +31,7 @@ export const ProcessTableModal = ({
     area: "",
     processo: "",
     categoria: "",
+    tempoGasto: null,
     gestao: false,
     inovacao: false,
     analise: false,
@@ -71,11 +72,7 @@ export const ProcessTableModal = ({
     if (!values.categoria.trim()) return false;
 
     // Verifica se os números/valores numéricos não são nulos ou undefined
-    if (values.gestao == null) return false;
-    if (values.inovacao == null) return false;
-    if (values.analise == null) return false;
-    if (values.sistematizacao == null) return false;
-    if (values.auxilio == null) return false;
+    if (values.tempoGasto == null) return false;
 
     // Verifica se a lista estruturaCargos não está vazia
     if (
@@ -153,6 +150,7 @@ export const ProcessTableModal = ({
       area: "",
       processo: "",
       categoria: "",
+      tempoGasto: null,
       gestao: false,
       inovacao: false,
       analise: false,
@@ -256,6 +254,22 @@ export const ProcessTableModal = ({
                   disabled={type === "delete"}
                   onChange={(e) => {
                     setValues({ ...values, processo: e.target.value });
+                    setError("");
+                  }}
+                />
+              </InputContainer>
+              <InputContainer>
+                <label htmlFor="tempo-gasto">
+                  {"Tempo médio de execução (em horas):"}
+                </label>
+                <TextField
+                  id="tempo-gasto"
+                  name="tempo-gasto"
+                  type="number"
+                  value={values.tempoGasto}
+                  disabled={type === "delete"}
+                  onChange={(e) => {
+                    setValues({ ...values, tempoGasto: e.target.value });
                     setError("");
                   }}
                 />
