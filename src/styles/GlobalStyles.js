@@ -31,7 +31,6 @@ export const Container = styled.section`
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   align-items: center;
   justify-content: center;
-  max-height: 40vh;
 `;
 
 export const Div = styled.div`
@@ -80,4 +79,14 @@ export const ContentContainer = styled.div`
   position: relative;
   z-index: 1;
   overflow: visible;
+`;
+
+export const WarningInputMessage = styled.span`
+  color: red;
+  font-size: 13px;
+  align-self: flex-start;
+
+  &:hover {
+    cursor: default;
+  }
 `;

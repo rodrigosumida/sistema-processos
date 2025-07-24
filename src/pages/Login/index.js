@@ -75,7 +75,9 @@ export default function Login() {
   return (
     <Content>
       <Container>
-        <h1 style={{ alignSelf: "center" }}>Faça seu Login</h1>
+        <h1 style={{ alignSelf: "center", textAlign: "center" }}>
+          Faça seu Login
+        </h1>
         <Form onSubmit={handleSubmit}>
           {/* Username */}
           <label for="email">E-mail:</label>

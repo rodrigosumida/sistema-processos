@@ -10,6 +10,7 @@ import Cargo from "../pages/Cargo";
 import Area from "../pages/Area";
 import Login from "../pages/Login";
 import api from "../api/axios";
+import Cadastro from "../pages/Cadastro";
 
 export default function Routess() {
   function RequireAuth({ children }) {
@@ -105,6 +106,15 @@ export default function Routess() {
           </AlreadyLogged>
         }
       />
+      <Route
+        path="/cadastro"
+        element={
+          <AlreadyLogged>
+            <Cadastro />
+          </AlreadyLogged>
+        }
+      />
+
       <Route path="*" element={<Page404 />} />
     </Routes>
   );

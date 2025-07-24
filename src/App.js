@@ -7,6 +7,7 @@ import store, { persistor } from "./store";
 import GlobalStyles from "./styles/GlobalStyles";
 
 import RoutesIndex from "./routes";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
@@ -21,6 +22,18 @@ function App() {
           <Router>
             <RoutesIndex />
             <GlobalStyles />
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="colored"
+            />
           </Router>
         </PersistGate>
       </Provider>
