@@ -11,6 +11,7 @@ import Area from "../pages/Area";
 import Login from "../pages/Login";
 import api from "../api/axios";
 import Cadastro from "../pages/Cadastro";
+// import Teste from "../pages/Teste";
 
 export default function Routess() {
   function RequireAuth({ children }) {
@@ -97,6 +98,14 @@ export default function Routess() {
           </RequireAuth>
         }
       />
+      {/* <Route
+        path="/teste"
+        element={
+          <RequireAuth>
+            <Teste />
+          </RequireAuth>
+        }
+      /> */}
 
       <Route
         path="/login"

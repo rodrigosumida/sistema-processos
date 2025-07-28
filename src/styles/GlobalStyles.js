@@ -79,6 +79,7 @@ export const ContentContainer = styled.div`
   position: relative;
   z-index: 1;
   overflow: visible;
+  height: 100%;
 `;
 
 export const WarningInputMessage = styled.span`

@@ -1,17 +1,31 @@
 import { BarChart, PieChart } from "@mui/x-charts";
 import Header from "../../components/Header";
 import {
+  BigNumber,
   BoxGrafico,
   Container,
   ContainerAreaInput,
-  ContainerGraficos,
+  Content,
+  DashboardContainer,
+  DashboardLeft,
+  DashboardRight,
+  DinamicTableContainer,
+  NumbersContainer,
+  LowerDashboard,
+  NumberContainer,
+  TotalContainer,
+  UpperDashboard,
+  UpperLeftSection,
+  UpperRightSection,
+  IndicatorsContainer,
 } from "./styled";
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, Box, TextField } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { mudarHeader } from "../../store/modules/header/actions";
 import { ContentContainer } from "../../styles/GlobalStyles";
+import { MaterialReactTable } from "material-react-table";
 
 const Graficos = () => {
   const [rawData, setRawData] = useState([]);
@@ -135,23 +149,160 @@ const Graficos = () => {
       });
     });
 
-    return Object.entries(mapa).map(([nome, valores]) => {
-      const total =
-        valores.gestao +
-        valores.inovacao +
-        valores.analise +
-        valores.sistematizacao +
-        valores.auxilio;
+    return Object.entries(mapa)
+      .map(([nome, valores]) => {
+        const total =
+          valores.gestao +
+          valores.inovacao +
+          valores.analise +
+          valores.sistematizacao +
+          valores.auxilio;
 
+        if (total === 0) return null;
+
+        return {
+          nome,
+          gestao: parseFloat(((valores.gestao / total) * 100).toFixed(1)),
+          inovacao: parseFloat(((valores.inovacao / total) * 100).toFixed(1)),
+          analise: parseFloat(((valores.analise / total) * 100).toFixed(1)),
+          sistematizacao: parseFloat(
+            ((valores.sistematizacao / total) * 100).toFixed(1)
+          ),
+          auxilio: parseFloat(((valores.auxilio / total) * 100).toFixed(1)),
+        };
+      })
+      .filter(Boolean);
+  };
+
+  const gerarDadosTempoPorAtributo = (dados) => {
+    const totais = {
+      gestao: 0,
+      inovacao: 0,
+      analise: 0,
+      sistematizacao: 0,
+      auxilio: 0,
+    };
+
+    dados.forEach((item) => {
+      const tempo = item.tempoGasto || 0;
+
+      if (item.gestao) totais.gestao += tempo;
+      if (item.inovacao) totais.inovacao += tempo;
+      if (item.analise) totais.analise += tempo;
+      if (item.sistematizacao) totais.sistematizacao += tempo;
+      if (item.auxilio) totais.auxilio += tempo;
+    });
+
+    return [
+      { atributo: "Gestão", valor: totais.gestao, color: "#ff9900" },
+      {
+        atributo: "Inovação/Impacto",
+        valor: totais.inovacao,
+        color: "#a50021",
+      },
+      { atributo: "Análise", valor: totais.analise, color: "#9999ff" },
+      {
+        atributo: "Sistematização",
+        valor: totais.sistematizacao,
+        color: "#669900",
+      },
+      { atributo: "Auxílio", valor: totais.auxilio, color: "#ffff00" },
+    ];
+  };
+
+  const gerarDadosTabelaPorCargo = (dados) => {
+    const mapa = {};
+
+    dados.forEach((processo) => {
+      const { tempoGasto, estruturaCargos } = processo;
+
+      estruturaCargos.forEach((item) => {
+        const nomeCargo = item?.cargo?.nome;
+        if (!nomeCargo) return;
+
+        if (!mapa[nomeCargo]) {
+          mapa[nomeCargo] = {
+            cargo: nomeCargo,
+            qnt_processos: 0,
+            tempo: 0,
+          };
+        }
+
+        mapa[nomeCargo].qnt_processos += 1;
+        mapa[nomeCargo].tempo += tempoGasto;
+      });
+    });
+
+    return Object.values(mapa);
+  };
+
+  const gerarDadosTabelaPorCategoria = (dados) => {
+    const mapa = {};
+
+    dados.forEach((item) => {
+      const categoria = item.categoria || "Sem categoria";
+      const tempo = item.tempoGasto || 0;
+
+      if (!mapa[categoria]) {
+        mapa[categoria] = {
+          categoria,
+          qnt_processos: 0,
+          tempo: 0,
+        };
+      }
+
+      mapa[categoria].qnt_processos += 1;
+      mapa[categoria].tempo += tempo;
+    });
+
+    return Object.values(mapa);
+  };
+
+  const gerarDadosAtributosComPorcentagemPorCategoria = (dados, categoria) => {
+    const filtrado = dados.filter((item) => item.categoria === categoria);
+
+    const totalAtributos = {
+      gestao: 0,
+      inovacao: 0,
+      analise: 0,
+      sistematizacao: 0,
+      auxilio: 0,
+    };
+
+    filtrado.forEach((item) => {
+      totalAtributos.gestao += item.gestao || 0;
+      totalAtributos.inovacao += item.inovacao || 0;
+      totalAtributos.analise += item.analise || 0;
+      totalAtributos.sistematizacao += item.sistematizacao || 0;
+      totalAtributos.auxilio += item.auxilio || 0;
+    });
+
+    const total =
+      totalAtributos.gestao +
+      totalAtributos.inovacao +
+      totalAtributos.analise +
+      totalAtributos.sistematizacao +
+      totalAtributos.auxilio;
+
+    if (!total) return [];
+
+    const map = [
+      { key: "gestao", label: "Gestão", color: "#ff9900" },
+      { key: "inovacao", label: "Inovação/Impacto", color: "#a50021" },
+      { key: "analise", label: "Análise", color: "#9999ff" },
+      { key: "sistematizacao", label: "Sistematização", color: "#669900" },
+      { key: "auxilio", label: "Auxílio", color: "#ffff00" },
+    ];
+
+    return map.map((item, index) => {
+      const valor = totalAtributos[item.key];
+      const percentual = ((valor / total) * 100).toFixed(1);
       return {
-        nome,
-        gestao: parseFloat(((valores.gestao / total) * 100).toFixed(1)),
-        inovacao: parseFloat(((valores.inovacao / total) * 100).toFixed(1)),
-        analise: parseFloat(((valores.analise / total) * 100).toFixed(1)),
-        sistematizacao: parseFloat(
-          ((valores.sistematizacao / total) * 100).toFixed(1)
-        ),
-        auxilio: parseFloat(((valores.auxilio / total) * 100).toFixed(1)),
+        id: index,
+        value: valor,
+        label: item.label,
+        percentual,
+        color: item.color,
       };
     });
   };
@@ -164,91 +315,291 @@ const Graficos = () => {
     calcularTotais(data);
   };
 
+  const timeColumns = [
+    {
+      accessorKey: "cargo",
+      header: "Cargo",
+      muiTableHeadCellProps: {
+        sx: {
+          verticalAlign: "bottom",
+          paddingBottom: "8px",
+        },
+      },
+    },
+    {
+      accessorKey: "qnt_processos",
+      header: "Qtd. Processos",
+      muiTableHeadCellProps: {
+        sx: {
+          verticalAlign: "bottom",
+          paddingBottom: "8px",
+        },
+      },
+    },
+    {
+      accessorKey: "tempo",
+      header: "Tempo total",
+      size: 10,
+      muiTableHeadCellProps: {
+        sx: {
+          verticalAlign: "bottom",
+          paddingBottom: "8px",
+        },
+      },
+      Cell: ({ cell }) => `${cell.getValue()} horas`,
+    },
+  ];
+
+  const categoryColumns = [
+    {
+      accessorKey: "categoria",
+      header: "Macroprocesso",
+      muiTableHeadCellProps: {
+        sx: {
+          verticalAlign: "bottom",
+          paddingBottom: "8px",
+        },
+      },
+    },
+    {
+      accessorKey: "qnt_processos",
+      header: "Qtd. Processos",
+      muiTableHeadCellProps: {
+        sx: {
+          verticalAlign: "bottom",
+          paddingBottom: "8px",
+        },
+      },
+    },
+    {
+      accessorKey: "tempo",
+      header: "Tempo total",
+      size: 10,
+      muiTableHeadCellProps: {
+        sx: {
+          verticalAlign: "bottom",
+          paddingBottom: "8px",
+        },
+      },
+      Cell: ({ cell }) => `${cell.getValue()} horas`,
+    },
+  ];
+
   useEffect(() => {
     console.log("asd");
     getData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const macroprocessos = new Set(filteredData.map((item) => item.categoria))
+    .size;
+  const atividades = filteredData.length;
+
   return (
     <Container>
       <Header />
       <ContentContainer compact={compact}>
-        <ContainerAreaInput>
-          <Autocomplete
-            disablePortal
-            disableClearable
-            options={areaData}
-            getOptionLabel={(option) => option.nome || ""}
-            value={areaData.find((a) => a._id === selectedArea._id) || null}
-            renderInput={(params) => <TextField {...params} />}
-            sx={{
-              ":hover": {
-                cursor: "pointer",
-              },
-            }}
-            onChange={(e, value) => handleChangeArea(value)}
-          />
-        </ContainerAreaInput>
-        <ContainerGraficos>
-          <BoxGrafico>
-            <PieChart
-              series={[
-                {
-                  arcLabel: (item) => `${item.percentual}%`,
-                  arcLabelMinAngle: 35,
-                  arcLabelRadius: "60%",
-                  data: gerarDadosAtributosComPorcentagem(),
-                },
-              ]}
-            />
-          </BoxGrafico>
-          <BoxGrafico>
-            <BarChart
-              dataset={gerarDadosCargosComPorcentagem(filteredData)}
-              xAxis={[{ scaleType: "band", dataKey: "nome", label: "Cargo" }]}
-              yAxis={[{ label: "Porcentagem (%)" }]}
-              grid={{ horizontal: true }}
-              series={[
-                {
-                  dataKey: "gestao",
-                  label: "Gestão",
-                  stack: "total",
-                  color: "#ff9900",
-                  valueFormatter: (v) => `${v.toFixed(1)}%`,
-                },
-                {
-                  dataKey: "inovacao",
-                  label: "Inovação",
-                  stack: "total",
-                  color: "#a50021",
-                  valueFormatter: (v) => `${v.toFixed(1)}%`,
-                },
-                {
-                  dataKey: "analise",
-                  label: "Análise",
-                  stack: "total",
-                  color: "#9999ff",
-                  valueFormatter: (v) => `${v.toFixed(1)}%`,
-                },
-                {
-                  dataKey: "sistematizacao",
-                  label: "Sistematização",
-                  stack: "total",
-                  color: "#669900",
-                  valueFormatter: (v) => `${v.toFixed(1)}%`,
-                },
-                {
-                  dataKey: "auxilio",
-                  label: "Auxílio",
-                  stack: "total",
-                  color: "#ffff00",
-                  valueFormatter: (v) => `${v.toFixed(1)}%`,
-                },
-              ]}
-            />
-          </BoxGrafico>
-        </ContainerGraficos>
+        <Content>
+          <DashboardContainer>
+            <DashboardLeft>
+              <UpperDashboard>
+                <UpperLeftSection>
+                  <ContainerAreaInput>
+                    <Autocomplete
+                      disablePortal
+                      disableClearable
+                      options={areaData}
+                      getOptionLabel={(option) => option.nome || ""}
+                      value={
+                        areaData.find((a) => a._id === selectedArea._id) || null
+                      }
+                      renderInput={(params) => <TextField {...params} />}
+                      sx={{
+                        ":hover": {
+                          cursor: "pointer",
+                        },
+                      }}
+                      onChange={(e, value) => handleChangeArea(value)}
+                    />
+                  </ContainerAreaInput>
+                  <IndicatorsContainer>
+                    <NumbersContainer>
+                      <NumberContainer>
+                        <BigNumber>{macroprocessos}</BigNumber>
+                        <span>MACROPROCESSOS</span>
+                      </NumberContainer>
+                      <NumberContainer>
+                        <BigNumber>{atividades}</BigNumber>
+                        <span>ATIVIDADES</span>
+                      </NumberContainer>
+                    </NumbersContainer>
+                    <TotalContainer>
+                      <PieChart
+                        series={[
+                          {
+                            arcLabel: (item) => `${item.percentual}%`,
+                            arcLabelMinAngle: 35,
+                            arcLabelRadius: "60%",
+                            data: gerarDadosAtributosComPorcentagem(),
+                          },
+                        ]}
+                      />
+                    </TotalContainer>
+                  </IndicatorsContainer>
+                </UpperLeftSection>
+                <UpperRightSection>
+                  <BoxGrafico>
+                    <BarChart
+                      dataset={gerarDadosTempoPorAtributo(filteredData)}
+                      xAxis={[{ label: "Tempo Gasto (h)", dataKey: "valor" }]}
+                      yAxis={[
+                        {
+                          scaleType: "band",
+                          dataKey: "atributo",
+                          label: "Atributo",
+                        },
+                      ]}
+                      grid={{ vertical: true }}
+                      series={[
+                        {
+                          dataKey: "valor",
+                          label: "Tempo Gasto",
+                          color: ({ color }) => color,
+                          valueFormatter: (v) => `${v}h`,
+                        },
+                      ]}
+                      layout="horizontal"
+                    />
+                  </BoxGrafico>
+                </UpperRightSection>
+              </UpperDashboard>
+              <LowerDashboard>
+                <BoxGrafico>
+                  <BarChart
+                    key={selectedArea?._id}
+                    dataset={gerarDadosCargosComPorcentagem(filteredData)}
+                    xAxis={[
+                      { scaleType: "band", dataKey: "nome", label: "Cargo" },
+                    ]}
+                    yAxis={[{ label: "Porcentagem (%)" }]}
+                    grid={{ horizontal: true }}
+                    series={[
+                      {
+                        dataKey: "gestao",
+                        label: "Gestão",
+                        stack: "total",
+                        color: "#ff9900",
+                        valueFormatter: (v) => `${v.toFixed(1)}%`,
+                      },
+                      {
+                        dataKey: "inovacao",
+                        label: "Inovação/Impacto",
+                        stack: "total",
+                        color: "#a50021",
+                        valueFormatter: (v) => `${v.toFixed(1)}%`,
+                      },
+                      {
+                        dataKey: "analise",
+                        label: "Análise",
+                        stack: "total",
+                        color: "#9999ff",
+                        valueFormatter: (v) => `${v.toFixed(1)}%`,
+                      },
+                      {
+                        dataKey: "sistematizacao",
+                        label: "Sistematização",
+                        stack: "total",
+                        color: "#669900",
+                        valueFormatter: (v) => `${v.toFixed(1)}%`,
+                      },
+                      {
+                        dataKey: "auxilio",
+                        label: "Auxílio",
+                        stack: "total",
+                        color: "#ffff00",
+                        valueFormatter: (v) => `${v.toFixed(1)}%`,
+                      },
+                    ]}
+                  />
+                </BoxGrafico>
+              </LowerDashboard>
+            </DashboardLeft>
+            <DashboardRight>
+              <BoxGrafico>
+                <MaterialReactTable
+                  columns={timeColumns}
+                  data={gerarDadosTabelaPorCargo(filteredData)}
+                  enableTopToolbar={false}
+                  muiTablePaperProps={{
+                    sx: {
+                      flex: 1,
+                      height: "100%",
+                    },
+                  }}
+                  initialState={{
+                    density: "compact",
+                  }}
+                />
+              </BoxGrafico>
+            </DashboardRight>
+          </DashboardContainer>
+          <DinamicTableContainer>
+            <BoxGrafico>
+              <MaterialReactTable
+                columns={categoryColumns}
+                data={gerarDadosTabelaPorCategoria(filteredData)}
+                enableTopToolbar={false}
+                muiTablePaperProps={{
+                  sx: {
+                    flex: 1,
+                    height: "100%",
+                  },
+                }}
+                initialState={{
+                  density: "compact",
+                }}
+                enableExpanding
+                muiTableBodyRowProps={{ sx: { verticalAlign: "top" } }}
+                renderDetailPanel={({ row }) => {
+                  const categoria = row.original.categoria;
+                  const dataPie = gerarDadosAtributosComPorcentagemPorCategoria(
+                    filteredData,
+                    categoria
+                  );
+
+                  return (
+                    <Box
+                      sx={{
+                        p: 2,
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <PieChart
+                        series={[
+                          {
+                            arcLabel: (item) => `${item.percentual}%`,
+                            arcLabelMinAngle: 35,
+                            arcLabelRadius: "60%",
+                            data: dataPie,
+                            highlightScope: {
+                              faded: "global",
+                              highlighted: "item",
+                            },
+                            innerRadius: 40,
+                            outerRadius: 80,
+                          },
+                        ]}
+                        width={300}
+                        height={200}
+                      />
+                    </Box>
+                  );
+                }}
+              />
+            </BoxGrafico>
+          </DinamicTableContainer>
+        </Content>
       </ContentContainer>
     </Container>
   );
