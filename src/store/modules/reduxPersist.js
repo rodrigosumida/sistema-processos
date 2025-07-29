@@ -7,7 +7,7 @@ export default (reducers) => {
     {
       key: "MATRIZ-PROCESSOS",
       storage,
-      whitelist: ["auth"],
+      whitelist: ["auth", "header"],
     },
     reducers
   );

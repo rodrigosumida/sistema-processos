@@ -14,23 +14,21 @@ export const ContainerContent = styled.div`
 
 export const ContainerAreaInput = styled.div``;
 
-export const ContainerGraficos = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  gap: 10%;
-`;
-
 export const BoxGrafico = styled.div`
   height: 100%;
   border-radius: 10px;
   box-shadow: 10px 10px 10px rgb(0, 0, 0, 0.08);
 `;
 
+export const BoxGraficoAlt = styled.div`
+  height: fit-content;
+  border-radius: 10px;
+  box-shadow: 10px 10px 10px rgb(0, 0, 0, 0.08);
+`;
+
 export const Content = styled.div`
   width: 100%;
-  height: 100%;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   padding: ${GAP};
@@ -39,9 +37,13 @@ export const Content = styled.div`
 
 export const DashboardContainer = styled.div`
   width: 100%;
-  height: 65%;
+  height: fit-content;
   display: flex;
   gap: ${GAP};
+
+  @media (max-width: 1500px) {
+    flex-direction: column;
+  }
 `;
 
 export const DashboardLeft = styled.div`
@@ -50,6 +52,10 @@ export const DashboardLeft = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${GAP};
+
+  @media (max-width: 1500px) {
+    width: 100%;
+  }
 `;
 
 export const UpperDashboard = styled.div`
@@ -100,21 +106,39 @@ export const BigNumber = styled.div`
 `;
 
 export const TotalContainer = styled.div`
-  flex: 1;
+  width: 65%;
+  height: 100%;
 `;
 
 export const UpperRightSection = styled.div`
-  flex: 1;
+  width: 40%;
+  height: 100%;
 `;
 
 export const LowerDashboard = styled.div`
-  flex: 1;
+  width: 100%;
+  height: 50%;
 `;
 
 export const DashboardRight = styled.div`
-  flex: 1;
+  width: 40%;
+  height: 100%;
+
+  /* @media (max-width: 1615px) {
+    width: 30%;
+  } */
+
+  @media (max-width: 1500px) {
+    width: 100%;
+    height: fit-content;
+  }
 `;
 
 export const DinamicTableContainer = styled.div`
-  flex: 1;
+  width: 100%;
+  height: 35%;
+
+  @media (max-width: 1500px) {
+    height: fit-content;
+  }
 `;

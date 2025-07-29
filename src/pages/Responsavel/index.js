@@ -117,6 +117,11 @@ const Responsavel = () => {
               </Tooltip>
             </Box>
           )}
+          muiTablePaperProps={{
+            sx: {
+              width: "100%",
+            },
+          }}
           renderTopToolbarCustomActions={() => (
             <Box
               sx={{

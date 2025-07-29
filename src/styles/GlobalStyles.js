@@ -13,7 +13,7 @@ export default createGlobalStyle`
         background: #eee;
     }
 
-    html, border-style, #root {
+    html, body, border-style, #root {
         height: 100%;
     }
 
@@ -79,7 +79,8 @@ export const ContentContainer = styled.div`
   position: relative;
   z-index: 1;
   overflow: visible;
-  height: 100%;
+  min-height: 100vh;
+  display: flex;
 `;
 
 export const WarningInputMessage = styled.span`

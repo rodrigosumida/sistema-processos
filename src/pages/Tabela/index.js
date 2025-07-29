@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
-import { Container, ContainerAreaInput, ContainerCheckCell } from "./styled";
+import {
+  ColumnContainer,
+  Container,
+  ContainerAreaInput,
+  ContainerCheckCell,
+} from "./styled";
 import { MaterialReactTable } from "material-react-table";
 import {
   Autocomplete,
@@ -241,107 +246,109 @@ const Tabela = () => {
     <Container>
       <Header />
       <ContentContainer compact={compact}>
-        <ContainerAreaInput>
-          <Autocomplete
-            disablePortal
-            options={areaData}
-            getOptionLabel={(option) => option.nome || ""}
-            value={areaData.find((a) => a._id === selectedArea._id) || null}
-            renderInput={(params) => <TextField {...params} />}
-            onChange={(e, value) => handleChangeArea(value)}
-          />
-        </ContainerAreaInput>
-        <MaterialReactTable
-          enableRowActions
-          enableGrouping
-          enablePagination={false}
-          columns={columns}
-          data={filteredData}
-          initialState={{
-            grouping: ["categoria"],
-            density: "compact",
-          }}
-          displayColumnDefOptions={{
-            "mrt-row-actions": {
-              size: 120,
-              header: "Ações",
-              muiTableHeadCellProps: {
-                sx: {
-                  verticalAlign: "bottom",
-                  paddingBottom: "8px",
+        <ColumnContainer>
+          <ContainerAreaInput>
+            <Autocomplete
+              disablePortal
+              options={areaData}
+              getOptionLabel={(option) => option.nome || ""}
+              value={areaData.find((a) => a._id === selectedArea._id) || null}
+              renderInput={(params) => <TextField {...params} />}
+              onChange={(e, value) => handleChangeArea(value)}
+            />
+          </ContainerAreaInput>
+          <MaterialReactTable
+            enableRowActions
+            enableGrouping
+            enablePagination={false}
+            columns={columns}
+            data={filteredData}
+            initialState={{
+              grouping: ["categoria"],
+              density: "compact",
+            }}
+            displayColumnDefOptions={{
+              "mrt-row-actions": {
+                size: 120,
+                header: "Ações",
+                muiTableHeadCellProps: {
+                  sx: {
+                    verticalAlign: "bottom",
+                    paddingBottom: "8px",
+                  },
                 },
               },
-            },
-          }}
-          positionActionsColumn="last"
-          muiTableBodyCellProps={({ cell, row }) => {
-            const colunasComEstilo = [
-              "gestao",
-              "inovacao",
-              "analise",
-              "sistematizacao",
-              "auxilio",
-            ];
+            }}
+            positionActionsColumn="last"
+            muiTableBodyCellProps={({ cell, row }) => {
+              const colunasComEstilo = [
+                "gestao",
+                "inovacao",
+                "analise",
+                "sistematizacao",
+                "auxilio",
+              ];
 
-            if (
-              !row.getIsGrouped() &&
-              colunasComEstilo.includes(cell.column.id)
-            ) {
-              return {
-                sx: {
-                  borderLeft: "1px solid rgba(224, 224, 224, 1)",
-                  borderRight: "1px solid rgba(224, 224, 224, 1)",
-                },
-              };
-            }
+              if (
+                !row.getIsGrouped() &&
+                colunasComEstilo.includes(cell.column.id)
+              ) {
+                return {
+                  sx: {
+                    borderLeft: "1px solid rgba(224, 224, 224, 1)",
+                    borderRight: "1px solid rgba(224, 224, 224, 1)",
+                  },
+                };
+              }
 
-            return {};
-          }}
-          rowGroupingExpandMode="multiple"
-          renderRowActions={({ row, table }) => (
-            <Box
-              sx={{
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Tooltip arrow placement="left" title="Editar">
-                <IconButton onClick={() => handleEditClick(row.original)}>
-                  <Edit />
-                </IconButton>
-              </Tooltip>
-              <Tooltip arrow placement="right" title="Excluir">
-                <IconButton
-                  color="error"
-                  onClick={() => handleDeleteClick(row.original)}
-                >
-                  <Delete />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          )}
-          renderTopToolbarCustomActions={() => (
-            <Box
-              sx={{
-                display: "flex",
-                gap: "20px",
-                padding: "8px",
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                onClick={() => handleAddClick()}
-                variant="contained"
-                sx={{ backgroundColor: "#104467" }}
+              return {};
+            }}
+            rowGroupingExpandMode="multiple"
+            renderRowActions={({ row, table }) => (
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: "1rem",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               >
-                Adicionar Novo Processo
-              </Button>
-            </Box>
-          )}
-        />
+                <Tooltip arrow placement="left" title="Editar">
+                  <IconButton onClick={() => handleEditClick(row.original)}>
+                    <Edit />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip arrow placement="right" title="Excluir">
+                  <IconButton
+                    color="error"
+                    onClick={() => handleDeleteClick(row.original)}
+                  >
+                    <Delete />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            )}
+            renderTopToolbarCustomActions={() => (
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: "20px",
+                  padding: "8px",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                }}
+              >
+                <Button
+                  onClick={() => handleAddClick()}
+                  variant="contained"
+                  sx={{ backgroundColor: "#104467" }}
+                >
+                  Adicionar Novo Processo
+                </Button>
+              </Box>
+            )}
+          />
+        </ColumnContainer>
       </ContentContainer>
       <ProcessTableModal
         open={modalOpen}

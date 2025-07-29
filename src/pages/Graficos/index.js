@@ -18,6 +18,7 @@ import {
   UpperLeftSection,
   UpperRightSection,
   IndicatorsContainer,
+  BoxGraficoAlt,
 } from "./styled";
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
@@ -128,7 +129,6 @@ const Graficos = () => {
       } = item;
 
       item.estruturaCargos.forEach((cargo) => {
-        console.log(cargo);
         // const nome = `${cargo.cargo?.nome} (${cargo.responsavel?.nome})`;
         const nome = cargo.cargo?.nome;
         if (!mapa[nome]) {
@@ -435,6 +435,7 @@ const Graficos = () => {
                     </NumbersContainer>
                     <TotalContainer>
                       <PieChart
+                        height={195}
                         series={[
                           {
                             arcLabel: (item) => `${item.percentual}%`,
@@ -476,6 +477,7 @@ const Graficos = () => {
               <LowerDashboard>
                 <BoxGrafico>
                   <BarChart
+                    height={240}
                     key={selectedArea?._id}
                     dataset={gerarDadosCargosComPorcentagem(filteredData)}
                     xAxis={[
@@ -544,7 +546,7 @@ const Graficos = () => {
             </DashboardRight>
           </DashboardContainer>
           <DinamicTableContainer>
-            <BoxGrafico>
+            <BoxGraficoAlt>
               <MaterialReactTable
                 columns={categoryColumns}
                 data={gerarDadosTabelaPorCategoria(filteredData)}
@@ -597,7 +599,7 @@ const Graficos = () => {
                   );
                 }}
               />
-            </BoxGrafico>
+            </BoxGraficoAlt>
           </DinamicTableContainer>
         </Content>
       </ContentContainer>
