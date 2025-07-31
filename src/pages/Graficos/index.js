@@ -19,14 +19,21 @@ import {
   UpperRightSection,
   IndicatorsContainer,
   BoxGraficoAlt,
+  GerarPdfButton,
 } from "./styled";
 import api from "../../api/axios";
-import { useEffect, useState } from "react";
+// eslint-disable-next-line no-unused-vars
+import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
+import html2canvas from "html2canvas";
+import { useEffect, useRef, useState } from "react";
 import { Autocomplete, Box, TextField } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { mudarHeader } from "../../store/modules/header/actions";
 import { ContentContainer } from "../../styles/GlobalStyles";
 import { MaterialReactTable } from "material-react-table";
+import dayjs from "dayjs";
+import RelatorioPDF from "../../components/RelatorioPdf";
+import { toast } from "react-toastify";
 
 const Graficos = () => {
   const [rawData, setRawData] = useState([]);
@@ -37,6 +44,13 @@ const Graficos = () => {
 
   const [totalAtributos, setTotalAtributos] = useState({});
   const [total, setTotal] = useState(null);
+
+  const [pdfData, setPdfData] = useState(null);
+  const [gerandoPdf, setGerandoPDf] = useState(false);
+
+  const refPizza = useRef();
+  const refBarra = useRef();
+  const refBarraStackada = useRef();
 
   const dispatch = useDispatch();
   dispatch(mudarHeader("Graficos"));
@@ -229,7 +243,7 @@ const Graficos = () => {
         }
 
         mapa[nomeCargo].qnt_processos += 1;
-        mapa[nomeCargo].tempo += tempoGasto;
+        mapa[nomeCargo].tempo += tempoGasto || 0;
       });
     });
 
@@ -309,6 +323,7 @@ const Graficos = () => {
 
   const handleChangeArea = (value) => {
     setSelectedArea(value || {});
+    setPdfData(null);
 
     const data = rawData.filter((item) => item.area?._id === value._id);
     setFilteredData(data);
@@ -385,6 +400,50 @@ const Graficos = () => {
     },
   ];
 
+  const capturarGraficoRef = async (ref) => {
+    if (!ref.current) {
+      console.warn("Elemento não encontrado via ref.");
+      return null;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    try {
+      const canvas = await html2canvas(ref.current, {
+        useCORS: true,
+        backgroundColor: "#fff",
+      });
+      return canvas.toDataURL("image/png");
+    } catch (error) {
+      console.error("Erro ao capturar gráfico por ref:", error);
+      return null;
+    }
+  };
+
+  const handleGerarPDF = async () => {
+    setPdfData(null);
+    setGerandoPDf(true);
+    toast.info("Gerando PDF...");
+
+    try {
+      const imagemPizza = await capturarGraficoRef(refPizza);
+      const imagemBarra = await capturarGraficoRef(refBarra);
+      const imagemBarraStackada = await capturarGraficoRef(refBarraStackada);
+
+      setPdfData({
+        imagemPizza,
+        imagemBarra,
+        imagemBarraStackada,
+        dadosTabelaCargo: gerarDadosTabelaPorCargo(filteredData),
+        dadosTabelaCategoria: gerarDadosTabelaPorCategoria(filteredData),
+      });
+      toast.success("PDF Gerado!");
+      setGerandoPDf(false);
+    } catch (err) {
+      toast.error("Erro: ", err);
+    }
+  };
+
   useEffect(() => {
     console.log("asd");
     getData();
@@ -415,12 +474,59 @@ const Graficos = () => {
                       }
                       renderInput={(params) => <TextField {...params} />}
                       sx={{
+                        width: "100%",
                         ":hover": {
                           cursor: "pointer",
                         },
                       }}
                       onChange={(e, value) => handleChangeArea(value)}
                     />
+                    <Box sx={{ display: "flex", gap: "8px" }}>
+                      <GerarPdfButton
+                        onClick={handleGerarPDF}
+                        disabled={gerandoPdf}
+                      >
+                        Preparar Relatório
+                      </GerarPdfButton>
+
+                      {pdfData && (
+                        <PDFDownloadLink
+                          document={
+                            <RelatorioPDF
+                              area={selectedArea}
+                              totais={totalAtributos}
+                              total={total}
+                              macroprocessos={macroprocessos}
+                              atividades={atividades}
+                              imagemPizza={pdfData.imagemPizza}
+                              imagemBarra={pdfData.imagemBarra}
+                              imagemBarraStackada={pdfData.imagemBarraStackada}
+                              dadosTabelaCargo={pdfData.dadosTabelaCargo}
+                              dadosTabelaCategoria={
+                                pdfData.dadosTabelaCategoria
+                              }
+                            />
+                          }
+                          fileName={`${selectedArea?.nome}_${dayjs().format(
+                            "YYYY-MM-DD"
+                          )}.pdf`}
+                          style={{
+                            backgroundColor: "#0a6fa6",
+                            padding: "6px 12px",
+                            color: "white",
+                            borderRadius: "5px",
+                            textAlign: "center",
+                            display: "flex",
+                            alignItems: "center",
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          {({ loading }) =>
+                            loading ? "Gerando PDF..." : "Baixar PDF"
+                          }
+                        </PDFDownloadLink>
+                      )}
+                    </Box>
                   </ContainerAreaInput>
                   <IndicatorsContainer>
                     <NumbersContainer>
@@ -434,95 +540,108 @@ const Graficos = () => {
                       </NumberContainer>
                     </NumbersContainer>
                     <TotalContainer>
-                      <PieChart
-                        height={195}
-                        series={[
-                          {
-                            arcLabel: (item) => `${item.percentual}%`,
-                            arcLabelMinAngle: 35,
-                            arcLabelRadius: "60%",
-                            data: gerarDadosAtributosComPorcentagem(),
-                          },
-                        ]}
-                      />
+                      <div ref={refPizza} id="graficoPizza">
+                        <PieChart
+                          id="graficoPizza"
+                          height={195}
+                          series={[
+                            {
+                              arcLabel: (item) => `${item.percentual}%`,
+                              arcLabelMinAngle: 35,
+                              arcLabelRadius: "60%",
+                              data: gerarDadosAtributosComPorcentagem(),
+                            },
+                          ]}
+                        />
+                      </div>
                     </TotalContainer>
                   </IndicatorsContainer>
                 </UpperLeftSection>
                 <UpperRightSection>
                   <BoxGrafico>
-                    <BarChart
-                      dataset={gerarDadosTempoPorAtributo(filteredData)}
-                      xAxis={[{ label: "Tempo Gasto (h)", dataKey: "valor" }]}
-                      yAxis={[
-                        {
-                          scaleType: "band",
-                          dataKey: "atributo",
-                          label: "Atributo",
-                        },
-                      ]}
-                      grid={{ vertical: true }}
-                      series={[
-                        {
-                          dataKey: "valor",
-                          label: "Tempo Gasto",
-                          color: ({ color }) => color,
-                          valueFormatter: (v) => `${v}h`,
-                        },
-                      ]}
-                      layout="horizontal"
-                    />
+                    <div
+                      ref={refBarra}
+                      id="graficoBarra"
+                      style={{ height: "100%" }}
+                    >
+                      <BarChart
+                        id="graficoBarra"
+                        dataset={gerarDadosTempoPorAtributo(filteredData)}
+                        xAxis={[{ label: "Tempo Gasto (h)", dataKey: "valor" }]}
+                        yAxis={[
+                          {
+                            scaleType: "band",
+                            dataKey: "atributo",
+                            label: "Atributo",
+                          },
+                        ]}
+                        grid={{ vertical: true }}
+                        series={[
+                          {
+                            dataKey: "valor",
+                            label: "Tempo Gasto",
+                            color: ({ color }) => color,
+                            valueFormatter: (v) => `${v}h`,
+                          },
+                        ]}
+                        layout="horizontal"
+                      />
+                    </div>
                   </BoxGrafico>
                 </UpperRightSection>
               </UpperDashboard>
               <LowerDashboard>
                 <BoxGrafico>
-                  <BarChart
-                    height={240}
-                    key={selectedArea?._id}
-                    dataset={gerarDadosCargosComPorcentagem(filteredData)}
-                    xAxis={[
-                      { scaleType: "band", dataKey: "nome", label: "Cargo" },
-                    ]}
-                    yAxis={[{ label: "Porcentagem (%)" }]}
-                    grid={{ horizontal: true }}
-                    series={[
-                      {
-                        dataKey: "gestao",
-                        label: "Gestão",
-                        stack: "total",
-                        color: "#ff9900",
-                        valueFormatter: (v) => `${v.toFixed(1)}%`,
-                      },
-                      {
-                        dataKey: "inovacao",
-                        label: "Inovação/Impacto",
-                        stack: "total",
-                        color: "#a50021",
-                        valueFormatter: (v) => `${v.toFixed(1)}%`,
-                      },
-                      {
-                        dataKey: "analise",
-                        label: "Análise",
-                        stack: "total",
-                        color: "#9999ff",
-                        valueFormatter: (v) => `${v.toFixed(1)}%`,
-                      },
-                      {
-                        dataKey: "sistematizacao",
-                        label: "Sistematização",
-                        stack: "total",
-                        color: "#669900",
-                        valueFormatter: (v) => `${v.toFixed(1)}%`,
-                      },
-                      {
-                        dataKey: "auxilio",
-                        label: "Auxílio",
-                        stack: "total",
-                        color: "#ffff00",
-                        valueFormatter: (v) => `${v.toFixed(1)}%`,
-                      },
-                    ]}
-                  />
+                  <div ref={refBarraStackada} id="graficoBarraStackada">
+                    <BarChart
+                      id="graficoBarraStackada"
+                      height={240}
+                      key={selectedArea?._id}
+                      dataset={gerarDadosCargosComPorcentagem(filteredData)}
+                      xAxis={[
+                        { scaleType: "band", dataKey: "nome", label: "Cargo" },
+                      ]}
+                      yAxis={[{ label: "Porcentagem (%)" }]}
+                      grid={{ horizontal: true }}
+                      series={[
+                        {
+                          dataKey: "gestao",
+                          label: "Gestão",
+                          stack: "total",
+                          color: "#ff9900",
+                          valueFormatter: (v) => `${v.toFixed(1)}%`,
+                        },
+                        {
+                          dataKey: "inovacao",
+                          label: "Inovação/Impacto",
+                          stack: "total",
+                          color: "#a50021",
+                          valueFormatter: (v) => `${v.toFixed(1)}%`,
+                        },
+                        {
+                          dataKey: "analise",
+                          label: "Análise",
+                          stack: "total",
+                          color: "#9999ff",
+                          valueFormatter: (v) => `${v.toFixed(1)}%`,
+                        },
+                        {
+                          dataKey: "sistematizacao",
+                          label: "Sistematização",
+                          stack: "total",
+                          color: "#669900",
+                          valueFormatter: (v) => `${v.toFixed(1)}%`,
+                        },
+                        {
+                          dataKey: "auxilio",
+                          label: "Auxílio",
+                          stack: "total",
+                          color: "#ffff00",
+                          valueFormatter: (v) => `${v.toFixed(1)}%`,
+                        },
+                      ]}
+                    />
+                  </div>
                 </BoxGrafico>
               </LowerDashboard>
             </DashboardLeft>
@@ -578,6 +697,7 @@ const Graficos = () => {
                       }}
                     >
                       <PieChart
+                        id="graficoPizza"
                         series={[
                           {
                             arcLabel: (item) => `${item.percentual}%`,
@@ -601,6 +721,22 @@ const Graficos = () => {
               />
             </BoxGraficoAlt>
           </DinamicTableContainer>
+          {/* {pdfData && (
+            <PDFViewer width="100%" height="800px" style={{ border: "none" }}>
+              <RelatorioPDF
+                area={selectedArea}
+                totais={totalAtributos}
+                total={total}
+                macroprocessos={macroprocessos}
+                atividades={atividades}
+                imagemPizza={pdfData.imagemPizza}
+                imagemBarra={pdfData.imagemBarra}
+                imagemBarraStackada={pdfData.imagemBarraStackada}
+                dadosTabelaCargo={pdfData.dadosTabelaCargo}
+                dadosTabelaCategoria={pdfData.dadosTabelaCategoria}
+              />
+            </PDFViewer>
+          )} */}
         </Content>
       </ContentContainer>
     </Container>

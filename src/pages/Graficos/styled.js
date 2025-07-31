@@ -12,7 +12,28 @@ export const ContainerContent = styled.div`
   margin-left: 280px;
 `;
 
-export const ContainerAreaInput = styled.div``;
+export const ContainerAreaInput = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+export const GerarPdfButton = styled.button`
+  padding: 6px 12px;
+  background-color: #104467;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &:disabled {
+    background-color: #777777ff;
+    cursor: not-allowed;
+  }
+`;
 
 export const BoxGrafico = styled.div`
   height: 100%;

@@ -260,6 +260,7 @@ const Tabela = () => {
           <MaterialReactTable
             enableRowActions
             enableGrouping
+            positionToolbarAlertBanner={"none"}
             enablePagination={false}
             columns={columns}
             data={filteredData}
@@ -280,6 +281,12 @@ const Tabela = () => {
               },
             }}
             positionActionsColumn="last"
+            muiTableHeadCellProps={{
+              sx: {
+                verticalAlign: "bottom",
+                paddingBottom: "8px",
+              },
+            }}
             muiTableBodyCellProps={({ cell, row }) => {
               const colunasComEstilo = [
                 "gestao",
