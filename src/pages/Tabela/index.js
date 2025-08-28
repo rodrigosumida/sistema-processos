@@ -24,6 +24,7 @@ import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { mudarHeader } from "../../store/modules/header/actions";
 import { ContentContainer } from "../../styles/GlobalStyles";
+import { MacroprocessoModal } from "../../components/MacroprocessoModal";
 // import { BooleanCell } from "../../components/BooleanCell";
 
 const Tabela = () => {
@@ -35,6 +36,8 @@ const Tabela = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
+
+  const [macroprocessoModalOpen, setMacroprocessoModalOpen] = useState(false);
 
   const [processo, setProcesso] = useState({});
 
@@ -83,6 +86,10 @@ const Tabela = () => {
     setModalType("create");
   };
 
+  const handleAddMacroprocessoClick = () => {
+    setMacroprocessoModalOpen(true);
+  };
+
   const handleEditClick = (item) => {
     setProcesso(item);
     setModalType("edit");
@@ -97,6 +104,7 @@ const Tabela = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
+    setMacroprocessoModalOpen(false);
     setModalType(null);
     setProcesso({});
     getData();
@@ -116,7 +124,8 @@ const Tabela = () => {
 
   const columns = [
     {
-      accessorKey: "categoria",
+      accessorFn: (row) => row.macroprocesso?._id,
+      id: "macroprocesso",
       header: "Macroprocesso",
       muiTableHeadCellProps: {
         sx: {
@@ -124,6 +133,16 @@ const Tabela = () => {
           paddingBottom: "8px",
         },
       },
+      Cell: ({ row }) => (
+        <>
+          <strong>{row.original.macroprocesso?.nome}</strong>
+          {row.original.macroprocesso?.descricao && (
+            <div style={{ fontSize: "0.8em", color: "#666" }}>
+              {row.original.macroprocesso.descricao}
+            </div>
+          )}
+        </>
+      ),
     },
     {
       accessorKey: "processo",
@@ -265,7 +284,7 @@ const Tabela = () => {
             columns={columns}
             data={filteredData}
             initialState={{
-              grouping: ["categoria"],
+              grouping: ["macroprocesso"],
               density: "compact",
             }}
             displayColumnDefOptions={{
@@ -311,6 +330,28 @@ const Tabela = () => {
               return {};
             }}
             rowGroupingExpandMode="multiple"
+            enableExpanding // habilita expansão de linhas
+            renderDetailPanel={({ row }) => {
+              const descricao = row.original.descricao;
+              return descricao ? (
+                <Box
+                  sx={{
+                    p: 2,
+                    backgroundColor: "#fafafa",
+                    borderRadius: "8px",
+                    fontSize: "0.9em",
+                    whiteSpace: "pre-wrap", // mantém quebras de linha
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {descricao}
+                </Box>
+              ) : (
+                <Box sx={{ p: 2, fontStyle: "italic", color: "#999" }}>
+                  Sem descrição detalhada.
+                </Box>
+              );
+            }}
             renderRowActions={({ row, table }) => (
               <Box
                 sx={{
@@ -346,6 +387,13 @@ const Tabela = () => {
                 }}
               >
                 <Button
+                  onClick={() => handleAddMacroprocessoClick()}
+                  variant="contained"
+                  sx={{ backgroundColor: "#104467" }}
+                >
+                  Adicionar Novo Macroprocesso
+                </Button>
+                <Button
                   onClick={() => handleAddClick()}
                   variant="contained"
                   sx={{ backgroundColor: "#104467" }}
@@ -357,6 +405,12 @@ const Tabela = () => {
           />
         </ColumnContainer>
       </ContentContainer>
+      <MacroprocessoModal
+        open={macroprocessoModalOpen}
+        onClose={handleCloseModal}
+        type={"create"}
+        selectedArea={selectedArea}
+      />
       <ProcessTableModal
         open={modalOpen}
         onClose={handleCloseModal}

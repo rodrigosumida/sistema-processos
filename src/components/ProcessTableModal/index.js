@@ -30,7 +30,8 @@ export const ProcessTableModal = ({
   const [values, setValues] = useState({
     area: "",
     processo: "",
-    categoria: "",
+    macroprocesso: "",
+    descricao: "",
     tempoGasto: null,
     gestao: false,
     inovacao: false,
@@ -41,6 +42,7 @@ export const ProcessTableModal = ({
   });
   const [cargoData, setCargoData] = useState([]);
   const [areaData, setAreaData] = useState([]);
+  const [macroprocessoData, setMacroprocessoData] = useState([]);
 
   const [error, setError] = useState("");
 
@@ -65,11 +67,21 @@ export const ProcessTableModal = ({
     }
   };
 
+  const getMacroprocessos = async () => {
+    try {
+      const { data } = await api.get("/macroprocesso");
+      setMacroprocessoData(data);
+    } catch (err) {
+      console.log("Erro: ", err);
+      toast.error("Ocorreu um erro");
+    }
+  };
+
   const validate = (values) => {
     // Verifica se strings estão preenchidas (não vazias)
     if (!values.area.trim()) return false;
     if (!values.processo.trim()) return false;
-    if (!values.categoria.trim()) return false;
+    if (!values.macroprocesso.trim()) return false;
 
     // Verifica se os números/valores numéricos não são nulos ou undefined
     if (values.tempoGasto == null) return false;
@@ -149,7 +161,8 @@ export const ProcessTableModal = ({
     setValues({
       area: "",
       processo: "",
-      categoria: "",
+      macroprocesso: "",
+      descricao: "",
       tempoGasto: null,
       gestao: false,
       inovacao: false,
@@ -174,6 +187,8 @@ export const ProcessTableModal = ({
     console.log("aaaa");
     getCargos();
     getAreas();
+    getMacroprocessos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -186,7 +201,11 @@ export const ProcessTableModal = ({
   useEffect(() => {
     console.log("bbbb");
     if (!isEmpty(processo) && Array.isArray(cargoData) && cargoData.length > 0)
-      setValues({ ...processo, area: processo?.area._id });
+      setValues({
+        ...processo,
+        area: processo?.area._id,
+        macroprocesso: processo?.macroprocesso._id,
+      });
   }, [type, processo, cargoData]);
 
   const filteredCargos = cargoData.filter((c) => c.area?._id === values.area);
@@ -226,21 +245,31 @@ export const ProcessTableModal = ({
                       ...values,
                       area: value?._id || "",
                       estruturaCargos: [], // zera os cargos ao trocar de área
+                      macroprocesso: "", // zera ao trocar de área
                     });
                   }}
                 />
               </InputContainer>
               <InputContainer>
-                <label htmlFor="categoria">Macroprocesso:</label>
-                <TextField
-                  id="categoria"
-                  name="categoria"
-                  type="text"
-                  value={values.categoria}
+                <label htmlFor="macroprocesso">Macroprocesso:</label>
+                <Autocomplete
+                  disablePortal
+                  options={macroprocessoData.filter(
+                    (item) => item.area === values.area
+                  )}
+                  getOptionLabel={(option) => option.nome || ""}
+                  value={
+                    macroprocessoData.find(
+                      (a) => a._id === values.macroprocesso
+                    ) || null
+                  }
                   disabled={type === "delete"}
-                  onChange={(e) => {
-                    setValues({ ...values, categoria: e.target.value });
-                    setError("");
+                  renderInput={(params) => <TextField {...params} />}
+                  onChange={(e, value) => {
+                    setValues({
+                      ...values,
+                      macroprocesso: value?._id || "",
+                    });
                   }}
                 />
               </InputContainer>
@@ -254,6 +283,23 @@ export const ProcessTableModal = ({
                   disabled={type === "delete"}
                   onChange={(e) => {
                     setValues({ ...values, processo: e.target.value });
+                    setError("");
+                  }}
+                />
+              </InputContainer>
+              <InputContainer>
+                <label htmlFor="descricao">Descrição:</label>
+                <TextField
+                  id="descricao"
+                  name="descricao"
+                  type="text"
+                  multiline
+                  rows={10} // define a altura inicial (em linhas)
+                  fullWidth
+                  value={values.descricao}
+                  disabled={type === "delete"}
+                  onChange={(e) => {
+                    setValues({ ...values, descricao: e.target.value });
                     setError("");
                   }}
                 />
