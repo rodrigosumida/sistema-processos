@@ -19,7 +19,13 @@ import "dayjs/locale/pt-br";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 
-export const MacroprocessoModal = ({ open, onClose, type, selectedArea }) => {
+export const MacroprocessoModal = ({
+  open,
+  onClose,
+  macroprocesso,
+  type,
+  selectedArea,
+}) => {
   const [values, setValues] = useState({
     area: "",
     nome: "",
@@ -68,39 +74,39 @@ export const MacroprocessoModal = ({ open, onClose, type, selectedArea }) => {
     }
   };
 
-  // const handleEditSave = async () => {
-  //   try {
-  //     console.log(values);
-  //     setError("");
+  const handleEditSave = async () => {
+    try {
+      console.log(values);
+      setError("");
 
-  //     if (!validate(values)) {
-  //       setError("Por favor, preencha todos os campos!");
-  //       return;
-  //     }
+      if (!validate(values)) {
+        setError("Por favor, preencha todos os campos!");
+        return;
+      }
 
-  //     await api.put(`/processo/${processo._id}`, values);
+      await api.put(`/macroprocesso/${macroprocesso._id}`, values);
 
-  //     resetValues();
-  //     onClose();
-  //   } catch (err) {
-  //     console.log("Erro: ", err);
-  //     toast.error("Ocorreu um erro");
-  //   }
-  // };
+      resetValues();
+      onClose();
+    } catch (err) {
+      console.log("Erro: ", err);
+      toast.error("Ocorreu um erro");
+    }
+  };
 
-  // const handleDelete = async () => {
-  //   try {
-  //     setError("");
+  const handleDelete = async () => {
+    try {
+      setError("");
 
-  //     await api.delete(`/processo/${processo._id}`);
+      await api.delete(`/macroprocesso/${macroprocesso._id}`);
 
-  //     resetValues();
-  //     onClose();
-  //   } catch (err) {
-  //     console.log("Erro: ", err);
-  //     toast.error("Ocorreu um erro");
-  //   }
-  // };
+      resetValues();
+      onClose();
+    } catch (err) {
+      console.log("Erro: ", err);
+      toast.error("Ocorreu um erro");
+    }
+  };
 
   const handleClose = () => {
     resetValues();
@@ -129,8 +135,11 @@ export const MacroprocessoModal = ({ open, onClose, type, selectedArea }) => {
   }, [selectedArea, areaData, type]);
 
   useEffect(() => {
+    if (macroprocesso) {
+      setValues(macroprocesso);
+    }
     console.log("bbbb");
-  }, []);
+  }, [macroprocesso]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
@@ -142,7 +151,9 @@ export const MacroprocessoModal = ({ open, onClose, type, selectedArea }) => {
             ? "Editar"
             : "Deseja remover este "
         } processo${
-          type === "delete" ? "? (Essa ação é irreversível)" : ""
+          type === "delete"
+            ? "? (Atenção! Excluir esse macroprocesso fará com que todos os processos associados a ele seja excluídos também! Essa ação é irreversível)"
+            : ""
         }`}</DialogTitle>
         <DialogContent>
           <Form>
@@ -166,7 +177,6 @@ export const MacroprocessoModal = ({ open, onClose, type, selectedArea }) => {
                     setValues({
                       ...values,
                       area: value?._id || "",
-                      estruturaCargos: [], // zera os cargos ao trocar de área
                     });
                   }}
                 />
@@ -209,14 +219,13 @@ export const MacroprocessoModal = ({ open, onClose, type, selectedArea }) => {
           </Button>
           <Button
             sx={{ backgroundColor: "#104467", color: "white" }}
-            // onClick={
-            //   type === "create"
-            //     ? handleSubmit
-            //     : type === "edit"
-            //     ? handleEditSave
-            //     : handleDelete
-            // }
-            onClick={handleSubmit}
+            onClick={
+              type === "create"
+                ? handleSubmit
+                : type === "edit"
+                ? handleEditSave
+                : handleDelete
+            }
             variant="contained"
           >
             {type === "delete" ? "Confirmar" : "Salvar"}

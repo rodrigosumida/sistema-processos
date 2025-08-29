@@ -38,8 +38,10 @@ const Tabela = () => {
   const [modalType, setModalType] = useState(null);
 
   const [macroprocessoModalOpen, setMacroprocessoModalOpen] = useState(false);
+  const [macroprocessoModalType, setMacroprocessoModalType] = useState(null);
 
   const [processo, setProcesso] = useState({});
+  const [macroprocesso, setMacroprocesso] = useState({});
 
   const dispatch = useDispatch();
   dispatch(mudarHeader("Tabela"));
@@ -52,22 +54,49 @@ const Tabela = () => {
       setAreaData(areas);
 
       const { data: processos } = await api.get("/processo");
+      const { data: macroprocessos } = await api.get("/macroprocesso");
+
       setTableData(processos);
 
+      let currentArea = selectedArea;
       if (!selectedArea || !selectedArea._id) {
-        const defaultArea = areas[0];
-        setSelectedArea(defaultArea);
-
-        const filtered = processos.filter(
-          (item) => item.area?._id === defaultArea?._id
-        );
-        setFilteredData(filtered);
-      } else {
-        const filtered = processos.filter(
-          (item) => item.area?._id === selectedArea._id
-        );
-        setFilteredData(filtered);
+        currentArea = areas[0];
+        setSelectedArea(currentArea);
       }
+
+      const filteredProcessos = processos.filter(
+        (item) => item.area?._id === currentArea._id
+      );
+      const filteredMacros = macroprocessos.filter(
+        (macro) => macro.area === currentArea._id
+      );
+
+      console.log(filteredMacros);
+
+      const macrosSemProcessos = filteredMacros.filter(
+        (macro) =>
+          !filteredProcessos.some((p) => p.macroprocesso?._id === macro._id)
+      );
+
+      const fakeRows = macrosSemProcessos.map((macro) => ({
+        _id: `fake-${macro._id}`,
+        area: currentArea,
+        macroprocesso: macro,
+        processo: null,
+        tempoGasto: null,
+        gestao: false,
+        inovacao: false,
+        analise: false,
+        sistematizacao: false,
+        auxilio: false,
+        estruturaCargos: [],
+        descricao: macro.descricao || "",
+      }));
+
+      const combinedData = [...filteredProcessos, ...fakeRows];
+
+      setFilteredData(combinedData);
+
       console.log("DONE");
     } catch (err) {
       toast.error("Ocorreu um erro!");
@@ -87,6 +116,7 @@ const Tabela = () => {
   };
 
   const handleAddMacroprocessoClick = () => {
+    setMacroprocessoModalType("create");
     setMacroprocessoModalOpen(true);
   };
 
@@ -96,16 +126,29 @@ const Tabela = () => {
     setModalOpen(true);
   };
 
+  const handleEditMacroprocessoClick = (item) => {
+    setMacroprocesso(item);
+    setMacroprocessoModalType("edit");
+    setMacroprocessoModalOpen(true);
+  };
+
   const handleDeleteClick = (item) => {
     setProcesso(item);
     setModalType("delete");
     setModalOpen(true);
   };
 
+  const handleDeleteMacroprocessoClick = (item) => {
+    setMacroprocesso(item);
+    setMacroprocessoModalType("delete");
+    setMacroprocessoModalOpen(true);
+  };
+
   const handleCloseModal = () => {
     setModalOpen(false);
     setMacroprocessoModalOpen(false);
     setModalType(null);
+    setMacroprocessoModalType(null);
     setProcesso({});
     getData();
   };
@@ -133,16 +176,53 @@ const Tabela = () => {
           paddingBottom: "8px",
         },
       },
-      Cell: ({ row }) => (
-        <>
-          <strong>{row.original.macroprocesso?.nome}</strong>
-          {row.original.macroprocesso?.descricao && (
-            <div style={{ fontSize: "0.8em", color: "#666" }}>
-              {row.original.macroprocesso.descricao}
-            </div>
-          )}
-        </>
-      ),
+      Cell: ({ row }) => {
+        const macro = row.original.macroprocesso;
+
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+            }}
+          >
+            <Box>
+              <strong>{macro?.nome}</strong>
+              {macro?.descricao && (
+                <div style={{ fontSize: "0.8em", color: "#666" }}>
+                  {macro.descricao}
+                </div>
+              )}
+            </Box>
+
+            <Box sx={{ display: "flex", gap: "0.5rem" }}>
+              <Tooltip arrow placement="top" title="Editar Macroprocesso">
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    handleEditMacroprocessoClick(row.original.macroprocesso)
+                  }
+                >
+                  <Edit fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip arrow placement="top" title="Excluir Macroprocesso">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() =>
+                    handleDeleteMacroprocessoClick(row.original.macroprocesso)
+                  }
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+        );
+      },
     },
     {
       accessorKey: "processo",
@@ -330,7 +410,7 @@ const Tabela = () => {
               return {};
             }}
             rowGroupingExpandMode="multiple"
-            enableExpanding // habilita expansão de linhas
+            enableExpanding
             renderDetailPanel={({ row }) => {
               const descricao = row.original.descricao;
               return descricao ? (
@@ -340,8 +420,9 @@ const Tabela = () => {
                     backgroundColor: "#fafafa",
                     borderRadius: "8px",
                     fontSize: "0.9em",
-                    whiteSpace: "pre-wrap", // mantém quebras de linha
+                    whiteSpace: "pre-wrap",
                     lineHeight: 1.5,
+                    textAlign: "justify",
                   }}
                 >
                   {descricao}
@@ -408,7 +489,8 @@ const Tabela = () => {
       <MacroprocessoModal
         open={macroprocessoModalOpen}
         onClose={handleCloseModal}
-        type={"create"}
+        type={macroprocessoModalType}
+        macroprocesso={macroprocesso}
         selectedArea={selectedArea}
       />
       <ProcessTableModal
