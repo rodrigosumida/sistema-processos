@@ -5,6 +5,8 @@ import {
   Container,
   ContainerAreaInput,
   ContainerCheckCell,
+  LeftTableContainer,
+  MacroprocessoTable,
 } from "./styled";
 import { MaterialReactTable } from "material-react-table";
 import {
@@ -25,11 +27,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { mudarHeader } from "../../store/modules/header/actions";
 import { ContentContainer } from "../../styles/GlobalStyles";
 import { MacroprocessoModal } from "../../components/MacroprocessoModal";
+import MacroprocessoItem from "../../components/MacroprocessoItem";
 // import { BooleanCell } from "../../components/BooleanCell";
 
 const Tabela = () => {
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+
+  const [macroprocessoData, setMacroprocessoData] = useState([]);
+  const [selectedMacro, setSelectedMacro] = useState(null);
 
   const [areaData, setAreaData] = useState([]);
   const [selectedArea, setSelectedArea] = useState({});
@@ -48,6 +54,31 @@ const Tabela = () => {
 
   const compact = useSelector((state) => state.header.compact);
 
+  const buildTableData = (processos) => {
+    return processos.flatMap((proc) =>
+      proc.etapas.length
+        ? proc.etapas.map((etapa, i) => ({
+            _id: proc._id,
+            processo: proc.processo,
+            macroprocesso: proc.macroprocesso,
+            area: proc.area,
+            descricao: proc.descricao,
+            etapaIndex: i + 1,
+            ...etapa,
+          }))
+        : [
+            {
+              _id: proc._id,
+              processo: proc.processo,
+              macroprocesso: proc.macroprocesso,
+              area: proc.area,
+              descricao: proc.descricao,
+              etapaIndex: null,
+            },
+          ]
+    );
+  };
+
   const getData = async () => {
     try {
       const { data: areas } = await api.get("/area");
@@ -57,6 +88,7 @@ const Tabela = () => {
       const { data: macroprocessos } = await api.get("/macroprocesso");
 
       setTableData(processos);
+      setMacroprocessoData(macroprocessos);
 
       let currentArea = selectedArea;
       if (!selectedArea || !selectedArea._id) {
@@ -64,38 +96,12 @@ const Tabela = () => {
         setSelectedArea(currentArea);
       }
 
-      const filteredProcessos = processos.filter(
+      const selectedAreaData = processos.filter(
         (item) => item.area?._id === currentArea._id
       );
-      const filteredMacros = macroprocessos.filter(
-        (macro) => macro.area === currentArea._id
-      );
 
-      console.log(filteredMacros);
-
-      const macrosSemProcessos = filteredMacros.filter(
-        (macro) =>
-          !filteredProcessos.some((p) => p.macroprocesso?._id === macro._id)
-      );
-
-      const fakeRows = macrosSemProcessos.map((macro) => ({
-        _id: `fake-${macro._id}`,
-        area: currentArea,
-        macroprocesso: macro,
-        processo: null,
-        tempoGasto: null,
-        gestao: false,
-        inovacao: false,
-        analise: false,
-        sistematizacao: false,
-        auxilio: false,
-        estruturaCargos: [],
-        descricao: macro.descricao || "",
-      }));
-
-      const combinedData = [...filteredProcessos, ...fakeRows];
-
-      setFilteredData(combinedData);
+      const flattened = buildTableData(selectedAreaData);
+      setFilteredData(flattened);
 
       console.log("DONE");
     } catch (err) {
@@ -107,7 +113,7 @@ const Tabela = () => {
     setSelectedArea(value || {});
 
     const data = tableData.filter((item) => item.area?._id === value._id);
-    setFilteredData(data);
+    setFilteredData(buildTableData(data));
   };
 
   const handleAddClick = () => {
@@ -166,64 +172,64 @@ const Tabela = () => {
   };
 
   const columns = [
-    {
-      accessorFn: (row) => row.macroprocesso?._id,
-      id: "macroprocesso",
-      header: "Macroprocesso",
-      muiTableHeadCellProps: {
-        sx: {
-          verticalAlign: "bottom",
-          paddingBottom: "8px",
-        },
-      },
-      Cell: ({ row }) => {
-        const macro = row.original.macroprocesso;
+    // {
+    //   accessorFn: (row) => row.macroprocesso?._id,
+    //   id: "macroprocesso",
+    //   header: "Macroprocesso",
+    //   muiTableHeadCellProps: {
+    //     sx: {
+    //       verticalAlign: "bottom",
+    //       paddingBottom: "8px",
+    //     },
+    //   },
+    //   Cell: ({ row }) => {
+    //     const macro = row.original.macroprocesso;
 
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 2,
-            }}
-          >
-            <Box>
-              <strong>{macro?.nome}</strong>
-              {macro?.descricao && (
-                <div style={{ fontSize: "0.8em", color: "#666" }}>
-                  {macro.descricao}
-                </div>
-              )}
-            </Box>
+    //     return (
+    //       <Box
+    //         sx={{
+    //           display: "flex",
+    //           alignItems: "center",
+    //           justifyContent: "space-between",
+    //           gap: 2,
+    //         }}
+    //       >
+    //         <Box>
+    //           <strong>{macro?.nome}</strong>
+    //           {macro?.descricao && (
+    //             <div style={{ fontSize: "0.8em", color: "#666" }}>
+    //               {macro.descricao}
+    //             </div>
+    //           )}
+    //         </Box>
 
-            <Box sx={{ display: "flex", gap: "0.5rem" }}>
-              <Tooltip arrow placement="top" title="Editar Macroprocesso">
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    handleEditMacroprocessoClick(row.original.macroprocesso)
-                  }
-                >
-                  <Edit fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip arrow placement="top" title="Excluir Macroprocesso">
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={() =>
-                    handleDeleteMacroprocessoClick(row.original.macroprocesso)
-                  }
-                >
-                  <Delete fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-        );
-      },
-    },
+    //         <Box sx={{ display: "flex", gap: "0.5rem" }}>
+    //           <Tooltip arrow placement="top" title="Editar Macroprocesso">
+    //             <IconButton
+    //               size="small"
+    //               onClick={() =>
+    //                 handleEditMacroprocessoClick(row.original.macroprocesso)
+    //               }
+    //             >
+    //               <Edit fontSize="small" />
+    //             </IconButton>
+    //           </Tooltip>
+    //           <Tooltip arrow placement="top" title="Excluir Macroprocesso">
+    //             <IconButton
+    //               size="small"
+    //               color="error"
+    //               onClick={() =>
+    //                 handleDeleteMacroprocessoClick(row.original.macroprocesso)
+    //               }
+    //             >
+    //               <Delete fontSize="small" />
+    //             </IconButton>
+    //           </Tooltip>
+    //         </Box>
+    //       </Box>
+    //     );
+    //   },
+    // },
     {
       accessorKey: "processo",
       header: "Processo",
@@ -233,6 +239,12 @@ const Tabela = () => {
           paddingBottom: "8px",
         },
       },
+    },
+    {
+      accessorKey: "etapa",
+      header: "Etapa",
+      size: 10,
+      Cell: ({ cell }) => (cell.getValue() ? cell.getValue() : ""),
     },
     {
       accessorKey: "tempoGasto",
@@ -363,10 +375,7 @@ const Tabela = () => {
             enablePagination={false}
             columns={columns}
             data={filteredData}
-            initialState={{
-              grouping: ["macroprocesso"],
-              density: "compact",
-            }}
+            initialState={{ grouping: ["processo"], density: "compact" }}
             displayColumnDefOptions={{
               "mrt-row-actions": {
                 size: 120,
@@ -412,24 +421,32 @@ const Tabela = () => {
             rowGroupingExpandMode="multiple"
             enableExpanding
             renderDetailPanel={({ row }) => {
-              const descricao = row.original.descricao;
-              return descricao ? (
-                <Box
-                  sx={{
-                    p: 2,
-                    backgroundColor: "#fafafa",
-                    borderRadius: "8px",
-                    fontSize: "0.9em",
-                    whiteSpace: "pre-wrap",
-                    lineHeight: 1.5,
-                    textAlign: "justify",
-                  }}
-                >
-                  {descricao}
+              const etapas = row.original.etapas || [];
+              return etapas.length ? (
+                <Box sx={{ p: 2 }}>
+                  {etapas.map((etapa, i) => (
+                    <Box
+                      key={i}
+                      sx={{
+                        mb: 1,
+                        p: 1,
+                        border: "1px solid #ddd",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <strong>Etapa {i + 1}:</strong> {etapa.nome}
+                      {console.log(etapa)}
+                      {etapa.descricao && (
+                        <div style={{ fontSize: "0.85em", color: "#666" }}>
+                          {etapa.descricao}
+                        </div>
+                      )}
+                    </Box>
+                  ))}
                 </Box>
               ) : (
                 <Box sx={{ p: 2, fontStyle: "italic", color: "#999" }}>
-                  Sem descrição detalhada.
+                  Nenhuma etapa cadastrada.
                 </Box>
               );
             }}
@@ -468,13 +485,6 @@ const Tabela = () => {
                 }}
               >
                 <Button
-                  onClick={() => handleAddMacroprocessoClick()}
-                  variant="contained"
-                  sx={{ backgroundColor: "#104467" }}
-                >
-                  Adicionar Novo Macroprocesso
-                </Button>
-                <Button
                   onClick={() => handleAddClick()}
                   variant="contained"
                   sx={{ backgroundColor: "#104467" }}
@@ -485,6 +495,35 @@ const Tabela = () => {
             )}
           />
         </ColumnContainer>
+        <LeftTableContainer>
+          <MacroprocessoTable>
+            <Button
+              onClick={() => handleAddMacroprocessoClick()}
+              variant="contained"
+              sx={{ backgroundColor: "#104467" }}
+            >
+              Adicionar Novo Macroprocesso
+            </Button>
+            {macroprocessoData
+              .filter((item) => item.area === selectedArea._id)
+              .map((macroprocesso) => (
+                <MacroprocessoItem
+                  key={macroprocesso._id}
+                  macroprocesso={macroprocesso}
+                  selected={macroprocesso._id === selectedMacro?._id}
+                  onClick={() => {
+                    setSelectedMacro(macroprocesso);
+                    const processosDoMacro = tableData.filter(
+                      (proc) => proc.macroprocesso?._id === macroprocesso._id
+                    );
+                    setFilteredData(buildTableData(processosDoMacro));
+                  }}
+                  onEditClick={handleEditMacroprocessoClick}
+                  onDeleteClick={handleDeleteMacroprocessoClick}
+                />
+              ))}
+          </MacroprocessoTable>
+        </LeftTableContainer>
       </ContentContainer>
       <MacroprocessoModal
         open={macroprocessoModalOpen}

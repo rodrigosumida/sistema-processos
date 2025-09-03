@@ -254,7 +254,7 @@ const Graficos = () => {
     const mapa = {};
 
     dados.forEach((item) => {
-      const categoria = item.categoria || "Sem categoria";
+      const categoria = item.macroprocesso?.nome || "Sem categoria";
       const tempo = item.tempoGasto || 0;
 
       if (!mapa[categoria]) {
@@ -273,7 +273,9 @@ const Graficos = () => {
   };
 
   const gerarDadosAtributosComPorcentagemPorCategoria = (dados, categoria) => {
-    const filtrado = dados.filter((item) => item.categoria === categoria);
+    const filtrado = dados.filter(
+      (item) => item.macroprocesso?.nome === categoria
+    );
 
     const totalAtributos = {
       gestao: 0,
@@ -450,8 +452,9 @@ const Graficos = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const macroprocessos = new Set(filteredData.map((item) => item.categoria))
-    .size;
+  const macroprocessos = new Set(
+    filteredData.map((item) => item.macroprocesso?.nome)
+  ).size;
   const atividades = filteredData.length;
 
   return (
