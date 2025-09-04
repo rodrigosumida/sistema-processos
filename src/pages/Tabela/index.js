@@ -19,6 +19,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
+import AddIcon from "@mui/icons-material/Add";
 
 import { ProcessTableModal } from "../../components/ProcessTableModal";
 import api from "../../api/axios";
@@ -28,6 +29,7 @@ import { mudarHeader } from "../../store/modules/header/actions";
 import { ContentContainer } from "../../styles/GlobalStyles";
 import { MacroprocessoModal } from "../../components/MacroprocessoModal";
 import MacroprocessoItem from "../../components/MacroprocessoItem";
+import { EtapaModal } from "../../components/EtapaModal";
 // import { BooleanCell } from "../../components/BooleanCell";
 
 const Tabela = () => {
@@ -46,7 +48,11 @@ const Tabela = () => {
   const [macroprocessoModalOpen, setMacroprocessoModalOpen] = useState(false);
   const [macroprocessoModalType, setMacroprocessoModalType] = useState(null);
 
+  const [etapaModalOpen, setEtapaModalOpen] = useState(false);
+  const [etapaModalType, setEtapaModalType] = useState(null);
+
   const [processo, setProcesso] = useState({});
+
   const [macroprocesso, setMacroprocesso] = useState({});
 
   const dispatch = useDispatch();
@@ -58,7 +64,8 @@ const Tabela = () => {
     return processos.flatMap((proc) =>
       proc.etapas.length
         ? proc.etapas.map((etapa, i) => ({
-            _id: proc._id,
+            rowId: `${proc._id}-${i}`,
+            processoId: proc._id,
             processo: proc.processo,
             macroprocesso: proc.macroprocesso,
             area: proc.area,
@@ -68,7 +75,8 @@ const Tabela = () => {
           }))
         : [
             {
-              _id: proc._id,
+              rowId: `${proc._id}-0`,
+              processoId: proc._id,
               processo: proc.processo,
               macroprocesso: proc.macroprocesso,
               area: proc.area,
@@ -101,6 +109,7 @@ const Tabela = () => {
       );
 
       const flattened = buildTableData(selectedAreaData);
+      console.log(flattened, "a");
       setFilteredData(flattened);
 
       console.log("DONE");
@@ -126,6 +135,12 @@ const Tabela = () => {
     setMacroprocessoModalOpen(true);
   };
 
+  const handleAddEtapaClick = (item) => {
+    setProcesso(item);
+    setEtapaModalOpen(true);
+    setEtapaModalType("create");
+  };
+
   const handleEditClick = (item) => {
     setProcesso(item);
     setModalType("edit");
@@ -136,6 +151,12 @@ const Tabela = () => {
     setMacroprocesso(item);
     setMacroprocessoModalType("edit");
     setMacroprocessoModalOpen(true);
+  };
+
+  const handleEditEtapaClick = (item) => {
+    setProcesso(item);
+    setEtapaModalType("edit");
+    setEtapaModalOpen(true);
   };
 
   const handleDeleteClick = (item) => {
@@ -150,11 +171,19 @@ const Tabela = () => {
     setMacroprocessoModalOpen(true);
   };
 
+  const handleDeleteEtapaClick = (item) => {
+    setProcesso(item);
+    setEtapaModalType("delete");
+    setEtapaModalOpen(true);
+  };
+
   const handleCloseModal = () => {
     setModalOpen(false);
     setMacroprocessoModalOpen(false);
+    setEtapaModalOpen(false);
     setModalType(null);
     setMacroprocessoModalType(null);
+    setEtapaModalType(null);
     setProcesso({});
     getData();
   };
@@ -172,64 +201,6 @@ const Tabela = () => {
   };
 
   const columns = [
-    // {
-    //   accessorFn: (row) => row.macroprocesso?._id,
-    //   id: "macroprocesso",
-    //   header: "Macroprocesso",
-    //   muiTableHeadCellProps: {
-    //     sx: {
-    //       verticalAlign: "bottom",
-    //       paddingBottom: "8px",
-    //     },
-    //   },
-    //   Cell: ({ row }) => {
-    //     const macro = row.original.macroprocesso;
-
-    //     return (
-    //       <Box
-    //         sx={{
-    //           display: "flex",
-    //           alignItems: "center",
-    //           justifyContent: "space-between",
-    //           gap: 2,
-    //         }}
-    //       >
-    //         <Box>
-    //           <strong>{macro?.nome}</strong>
-    //           {macro?.descricao && (
-    //             <div style={{ fontSize: "0.8em", color: "#666" }}>
-    //               {macro.descricao}
-    //             </div>
-    //           )}
-    //         </Box>
-
-    //         <Box sx={{ display: "flex", gap: "0.5rem" }}>
-    //           <Tooltip arrow placement="top" title="Editar Macroprocesso">
-    //             <IconButton
-    //               size="small"
-    //               onClick={() =>
-    //                 handleEditMacroprocessoClick(row.original.macroprocesso)
-    //               }
-    //             >
-    //               <Edit fontSize="small" />
-    //             </IconButton>
-    //           </Tooltip>
-    //           <Tooltip arrow placement="top" title="Excluir Macroprocesso">
-    //             <IconButton
-    //               size="small"
-    //               color="error"
-    //               onClick={() =>
-    //                 handleDeleteMacroprocessoClick(row.original.macroprocesso)
-    //               }
-    //             >
-    //               <Delete fontSize="small" />
-    //             </IconButton>
-    //           </Tooltip>
-    //         </Box>
-    //       </Box>
-    //     );
-    //   },
-    // },
     {
       accessorKey: "processo",
       header: "Processo",
@@ -238,6 +209,52 @@ const Tabela = () => {
           verticalAlign: "bottom",
           paddingBottom: "8px",
         },
+      },
+      Cell: ({ row }) => {
+        const processo = row.original.processo;
+
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+            }}
+          >
+            <Box>
+              <span>{processo}</span>
+            </Box>
+
+            <Box sx={{ display: "flex", gap: "0.5rem" }}>
+              <Tooltip arrow placement="top" title="Adicionar Processo">
+                <IconButton
+                  size="small"
+                  onClick={() => handleAddEtapaClick(row.original)}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip arrow placement="top" title="Editar Processo">
+                <IconButton
+                  size="small"
+                  onClick={() => handleEditClick(row.original)}
+                >
+                  <Edit fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip arrow placement="top" title="Excluir Processo">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleDeleteClick(row.original)}
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+        );
       },
     },
     {
@@ -460,14 +477,16 @@ const Tabela = () => {
                 }}
               >
                 <Tooltip arrow placement="left" title="Editar">
-                  <IconButton onClick={() => handleEditClick(row.original)}>
+                  <IconButton
+                    onClick={() => handleEditEtapaClick(row.original)}
+                  >
                     <Edit />
                   </IconButton>
                 </Tooltip>
                 <Tooltip arrow placement="right" title="Excluir">
                   <IconButton
                     color="error"
-                    onClick={() => handleDeleteClick(row.original)}
+                    onClick={() => handleDeleteEtapaClick(row.original)}
                   >
                     <Delete />
                   </IconButton>
@@ -536,6 +555,13 @@ const Tabela = () => {
         open={modalOpen}
         onClose={handleCloseModal}
         type={modalType}
+        processo={processo}
+        selectedArea={selectedArea}
+      />
+      <EtapaModal
+        open={etapaModalOpen}
+        onClose={handleCloseModal}
+        type={etapaModalType}
         processo={processo}
         selectedArea={selectedArea}
       />

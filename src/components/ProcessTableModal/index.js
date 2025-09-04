@@ -11,12 +11,11 @@ import {
   TextField,
 } from "@mui/material";
 import { ErroContainer, Form } from "../../styles/GlobalStyles";
-import { LevelContainer, LevelsContainer, InputContainer } from "./styled";
+import { InputContainer } from "./styled";
 
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "dayjs/locale/pt-br";
-import { LevelInput } from "../LevelInput";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 
@@ -32,30 +31,11 @@ export const ProcessTableModal = ({
     processo: "",
     macroprocesso: "",
     descricao: "",
-    tempoGasto: null,
-    gestao: false,
-    inovacao: false,
-    analise: false,
-    sistematizacao: false,
-    auxilio: false,
-    estruturaCargos: [],
   });
-  const [cargoData, setCargoData] = useState([]);
   const [areaData, setAreaData] = useState([]);
   const [macroprocessoData, setMacroprocessoData] = useState([]);
 
   const [error, setError] = useState("");
-
-  const getCargos = async () => {
-    try {
-      const { data } = await api.get(`/area-cargo-responsavel`);
-      console.log("acr", data);
-      setCargoData(data);
-    } catch (err) {
-      console.log("Erro: ", err);
-      toast.error("Ocorreu um erro");
-    }
-  };
 
   const getAreas = async () => {
     try {
@@ -83,16 +63,6 @@ export const ProcessTableModal = ({
     if (!values.processo.trim()) return false;
     if (!values.macroprocesso.trim()) return false;
 
-    // Verifica se os números/valores numéricos não são nulos ou undefined
-    if (values.tempoGasto == null) return false;
-
-    // Verifica se a lista estruturaCargos não está vazia
-    if (
-      !Array.isArray(values.estruturaCargos) ||
-      values.estruturaCargos.length === 0
-    )
-      return false;
-
     // Se passou por todas as validações, está válido
     return true;
   };
@@ -119,7 +89,6 @@ export const ProcessTableModal = ({
 
   const handleEditSave = async () => {
     try {
-      console.log(values);
       setError("");
 
       if (!validate(values)) {
@@ -127,7 +96,7 @@ export const ProcessTableModal = ({
         return;
       }
 
-      await api.put(`/processo/${processo._id}`, values);
+      await api.put(`/processo/${processo.processoId}`, values);
 
       resetValues();
       onClose();
@@ -141,7 +110,7 @@ export const ProcessTableModal = ({
     try {
       setError("");
 
-      await api.delete(`/processo/${processo._id}`);
+      await api.delete(`/processo/${processo.processoId}`);
 
       resetValues();
       onClose();
@@ -163,13 +132,6 @@ export const ProcessTableModal = ({
       processo: "",
       macroprocesso: "",
       descricao: "",
-      tempoGasto: null,
-      gestao: false,
-      inovacao: false,
-      analise: false,
-      sistematizacao: false,
-      auxilio: false,
-      estruturaCargos: [],
     });
   };
 
@@ -185,7 +147,6 @@ export const ProcessTableModal = ({
 
   useEffect(() => {
     console.log("aaaa");
-    getCargos();
     getAreas();
     getMacroprocessos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -200,15 +161,14 @@ export const ProcessTableModal = ({
 
   useEffect(() => {
     console.log("bbbb");
-    if (!isEmpty(processo) && Array.isArray(cargoData) && cargoData.length > 0)
+    if (!isEmpty(processo))
       setValues({
-        ...processo,
         area: processo?.area._id,
+        processo: processo?.processo,
         macroprocesso: processo?.macroprocesso._id,
+        descricao: processo?.descricao,
       });
-  }, [type, processo, cargoData]);
-
-  const filteredCargos = cargoData.filter((c) => c.area?._id === values.area);
+  }, [type, processo]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
@@ -244,7 +204,6 @@ export const ProcessTableModal = ({
                     setValues({
                       ...values,
                       area: value?._id || "",
-                      estruturaCargos: [], // zera os cargos ao trocar de área
                       macroprocesso: "", // zera ao trocar de área
                     });
                   }}
@@ -300,86 +259,6 @@ export const ProcessTableModal = ({
                   disabled={type === "delete"}
                   onChange={(e) => {
                     setValues({ ...values, descricao: e.target.value });
-                    setError("");
-                  }}
-                />
-              </InputContainer>
-              <InputContainer>
-                <label htmlFor="tempo-gasto">
-                  {"Tempo médio de execução (em horas):"}
-                </label>
-                <TextField
-                  id="tempo-gasto"
-                  name="tempo-gasto"
-                  type="number"
-                  value={values.tempoGasto}
-                  disabled={type === "delete"}
-                  onChange={(e) => {
-                    setValues({ ...values, tempoGasto: e.target.value });
-                    setError("");
-                  }}
-                />
-              </InputContainer>
-              <LevelsContainer>
-                <LevelContainer>
-                  <LevelInput
-                    label={"gestao"}
-                    values={values}
-                    setValues={setValues}
-                    type={type}
-                    setError={setError}
-                  />
-                </LevelContainer>
-                <LevelContainer>
-                  <LevelInput
-                    label={"inovacao"}
-                    values={values}
-                    setValues={setValues}
-                    setError={setError}
-                    type={type}
-                  />
-                </LevelContainer>
-                <LevelContainer>
-                  <LevelInput
-                    label={"analise"}
-                    values={values}
-                    setValues={setValues}
-                    type={type}
-                    setError={setError}
-                  />
-                </LevelContainer>
-                <LevelContainer>
-                  <LevelInput
-                    label={"sistematizacao"}
-                    values={values}
-                    setValues={setValues}
-                    type={type}
-                    setError={setError}
-                  />
-                </LevelContainer>
-                <LevelContainer>
-                  <LevelInput
-                    label={"auxilio"}
-                    values={values}
-                    setValues={setValues}
-                    type={type}
-                    setError={setError}
-                  />
-                </LevelContainer>
-              </LevelsContainer>
-              <InputContainer>
-                <label htmlFor="cargo">Estrutura de Cargos:</label>
-                <Autocomplete
-                  disablePortal
-                  multiple
-                  filterSelectedOptions
-                  options={filteredCargos}
-                  getOptionLabel={(item) => item.cargo?.nome || ""}
-                  value={values.estruturaCargos}
-                  disabled={type === "delete"}
-                  renderInput={(params) => <TextField {...params} />}
-                  onChange={(e, value) => {
-                    setValues({ ...values, estruturaCargos: value || [] });
                     setError("");
                   }}
                 />
