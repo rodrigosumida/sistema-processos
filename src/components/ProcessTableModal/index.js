@@ -25,6 +25,8 @@ export const ProcessTableModal = ({
   type,
   processo,
   selectedArea,
+  selectedMacro,
+  macroprocessoData,
 }) => {
   const [values, setValues] = useState({
     area: "",
@@ -33,7 +35,6 @@ export const ProcessTableModal = ({
     descricao: "",
   });
   const [areaData, setAreaData] = useState([]);
-  const [macroprocessoData, setMacroprocessoData] = useState([]);
 
   const [error, setError] = useState("");
 
@@ -41,16 +42,6 @@ export const ProcessTableModal = ({
     try {
       const { data } = await api.get("/area");
       setAreaData(data);
-    } catch (err) {
-      console.log("Erro: ", err);
-      toast.error("Ocorreu um erro");
-    }
-  };
-
-  const getMacroprocessos = async () => {
-    try {
-      const { data } = await api.get("/macroprocesso");
-      setMacroprocessoData(data);
     } catch (err) {
       console.log("Erro: ", err);
       toast.error("Ocorreu um erro");
@@ -146,21 +137,20 @@ export const ProcessTableModal = ({
   };
 
   useEffect(() => {
-    console.log("aaaa");
     getAreas();
-    getMacroprocessos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (selectedArea && type === "create") {
-      console.log("nbsdv");
       setValues((prev) => ({ ...prev, area: selectedArea._id }));
     }
-  }, [selectedArea, areaData, type]);
+    if (selectedMacro && type === "create") {
+      setValues((prev) => ({ ...prev, macroprocesso: selectedMacro._id }));
+    }
+  }, [selectedArea, selectedMacro, areaData, type]);
 
   useEffect(() => {
-    console.log("bbbb");
     if (!isEmpty(processo))
       setValues({
         area: processo?.area._id,

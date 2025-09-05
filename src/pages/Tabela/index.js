@@ -139,12 +139,18 @@ const Tabela = () => {
     const newMacros = macroprocessoData.filter(
       (item) => item.area === value._id
     );
-    setSelectedMacro(newMacros[0]);
 
-    const processosDoMacro = tableData.filter(
-      (proc) => proc.macroprocesso?._id === newMacros[0]._id
-    );
-    setFilteredData(buildTableData(processosDoMacro));
+    if (newMacros.length > 0) {
+      setSelectedMacro(newMacros[0]);
+
+      const processosDoMacro = tableData.filter(
+        (proc) => proc.macroprocesso?._id === newMacros[0]._id
+      );
+      setFilteredData(buildTableData(processosDoMacro));
+    } else {
+      setSelectedMacro(null);
+      setFilteredData([]);
+    }
   };
 
   const handleAddClick = () => {
@@ -528,6 +534,7 @@ const Tabela = () => {
                 <Button
                   onClick={() => handleAddClick()}
                   variant="contained"
+                  disabled={!selectedMacro}
                   sx={{ backgroundColor: "#104467" }}
                 >
                   Adicionar Novo Processo
@@ -579,6 +586,8 @@ const Tabela = () => {
         type={modalType}
         processo={processo}
         selectedArea={selectedArea}
+        selectedMacro={selectedMacro}
+        macroprocessoData={macroprocessoData}
       />
       <EtapaModal
         open={etapaModalOpen}

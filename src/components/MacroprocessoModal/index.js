@@ -150,7 +150,7 @@ export const MacroprocessoModal = ({
             : type === "edit"
             ? "Editar"
             : "Deseja remover este "
-        } processo${
+        } macroprocesso${
           type === "delete"
             ? "? (Atenção! Excluir esse macroprocesso fará com que todos os processos associados a ele seja excluídos também! Essa ação é irreversível)"
             : ""
