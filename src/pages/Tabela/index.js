@@ -104,15 +104,27 @@ const Tabela = () => {
         setSelectedArea(currentArea);
       }
 
-      const selectedAreaData = processos.filter(
-        (item) => item.area?._id === currentArea._id
+      let currentMacro = selectedMacro;
+      if (!selectedMacro || !selectedMacro._id) {
+        const areaMacros = macroprocessos.filter(
+          (macro) => macro?.area === currentArea?._id
+        );
+        currentMacro = areaMacros[0];
+        setSelectedMacro(currentMacro);
+      }
+
+      // const selectedAreaData = processos.filter(
+      //   (item) => item.area?._id === currentArea._id
+      // );
+
+      const processosDoMacro = processos.filter(
+        (proc) => proc.macroprocesso?._id === currentMacro?._id
       );
 
-      const flattened = buildTableData(selectedAreaData);
-      console.log(flattened, "a");
+      const flattened = buildTableData(processosDoMacro);
       setFilteredData(flattened);
 
-      console.log("DONE");
+      console.log("DONE - getData() Tabela index");
     } catch (err) {
       toast.error("Ocorreu um erro!");
     }
@@ -123,6 +135,16 @@ const Tabela = () => {
 
     const data = tableData.filter((item) => item.area?._id === value._id);
     setFilteredData(buildTableData(data));
+
+    const newMacros = macroprocessoData.filter(
+      (item) => item.area === value._id
+    );
+    setSelectedMacro(newMacros[0]);
+
+    const processosDoMacro = tableData.filter(
+      (proc) => proc.macroprocesso?._id === newMacros[0]._id
+    );
+    setFilteredData(buildTableData(processosDoMacro));
   };
 
   const handleAddClick = () => {
