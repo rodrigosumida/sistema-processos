@@ -349,7 +349,7 @@ const Graficos = () => {
 
     const data = rawData.filter((item) => item.area?._id === value._id);
     setFilteredData(data);
-    // calcularTotais(data);
+    calcularTotais(data);
   };
 
   const timeColumns = [
