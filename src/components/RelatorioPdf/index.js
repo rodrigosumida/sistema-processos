@@ -123,7 +123,7 @@ const RelatorioPDF = ({
         </View>
         {dadosTabelaCategoria.map((row, i) => (
           <View key={i} style={styles.tableRow}>
-            <Text style={styles.tableCol}>{row.categoria}</Text>
+            <Text style={styles.tableCol}>{row.macroprocesso}</Text>
             <Text style={styles.tableCol}>{row.qnt_processos}</Text>
             <Text style={styles.tableCol}>{row.tempo}</Text>
           </View>

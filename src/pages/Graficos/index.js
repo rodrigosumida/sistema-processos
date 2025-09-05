@@ -92,11 +92,14 @@ const Graficos = () => {
     };
 
     dados.forEach((item) => {
-      totais.gestao += item.gestao || 0;
-      totais.inovacao += item.inovacao || 0;
-      totais.analise += item.analise || 0;
-      totais.sistematizacao += item.sistematizacao || 0;
-      totais.auxilio += item.auxilio || 0;
+      item.etapas.length > 0 &&
+        item.etapas.forEach((etapa) => {
+          totais.gestao += etapa.gestao || 0;
+          totais.inovacao += etapa.inovacao || 0;
+          totais.analise += etapa.analise || 0;
+          totais.sistematizacao += etapa.sistematizacao || 0;
+          totais.auxilio += etapa.auxilio || 0;
+        });
     });
 
     // Soma o total de todos os atributos
@@ -134,33 +137,36 @@ const Graficos = () => {
     const mapa = {};
 
     dados.forEach((item) => {
-      const {
-        gestao = 0,
-        inovacao = 0,
-        analise = 0,
-        sistematizacao = 0,
-        auxilio = 0,
-      } = item;
+      item.etapas.length > 0 &&
+        item.etapas.forEach((etapa) => {
+          const {
+            gestao = 0,
+            inovacao = 0,
+            analise = 0,
+            sistematizacao = 0,
+            auxilio = 0,
+          } = etapa;
 
-      item.estruturaCargos.forEach((cargo) => {
-        // const nome = `${cargo.cargo?.nome} (${cargo.responsavel?.nome})`;
-        const nome = cargo.cargo?.nome;
-        if (!mapa[nome]) {
-          mapa[nome] = {
-            gestao: 0,
-            inovacao: 0,
-            analise: 0,
-            sistematizacao: 0,
-            auxilio: 0,
-          };
-        }
+          etapa.estruturaCargos.forEach((cargo) => {
+            // const nome = `${cargo.cargo?.nome} (${cargo.responsavel?.nome})`;
+            const nome = cargo.cargo?.nome;
+            if (!mapa[nome]) {
+              mapa[nome] = {
+                gestao: 0,
+                inovacao: 0,
+                analise: 0,
+                sistematizacao: 0,
+                auxilio: 0,
+              };
+            }
 
-        mapa[nome].gestao += gestao;
-        mapa[nome].inovacao += inovacao;
-        mapa[nome].analise += analise;
-        mapa[nome].sistematizacao += sistematizacao;
-        mapa[nome].auxilio += auxilio;
-      });
+            mapa[nome].gestao += gestao;
+            mapa[nome].inovacao += inovacao;
+            mapa[nome].analise += analise;
+            mapa[nome].sistematizacao += sistematizacao;
+            mapa[nome].auxilio += auxilio;
+          });
+        });
     });
 
     return Object.entries(mapa)
@@ -198,13 +204,16 @@ const Graficos = () => {
     };
 
     dados.forEach((item) => {
-      const tempo = item.tempoGasto || 0;
+      item.etapas.length > 0 &&
+        item.etapas.forEach((etapa) => {
+          const tempo = etapa.tempoGasto || 0;
 
-      if (item.gestao) totais.gestao += tempo;
-      if (item.inovacao) totais.inovacao += tempo;
-      if (item.analise) totais.analise += tempo;
-      if (item.sistematizacao) totais.sistematizacao += tempo;
-      if (item.auxilio) totais.auxilio += tempo;
+          if (etapa.gestao) totais.gestao += tempo;
+          if (etapa.inovacao) totais.inovacao += tempo;
+          if (etapa.analise) totais.analise += tempo;
+          if (etapa.sistematizacao) totais.sistematizacao += tempo;
+          if (etapa.auxilio) totais.auxilio += tempo;
+        });
     });
 
     return [
@@ -228,23 +237,26 @@ const Graficos = () => {
     const mapa = {};
 
     dados.forEach((processo) => {
-      const { tempoGasto, estruturaCargos } = processo;
+      processo.etapas.length > 0 &&
+        processo.etapas.forEach((etapa) => {
+          const { tempoGasto, estruturaCargos } = etapa;
 
-      estruturaCargos.forEach((item) => {
-        const nomeCargo = item?.cargo?.nome;
-        if (!nomeCargo) return;
+          estruturaCargos.forEach((item) => {
+            const nomeCargo = item?.cargo?.nome;
+            if (!nomeCargo) return;
 
-        if (!mapa[nomeCargo]) {
-          mapa[nomeCargo] = {
-            cargo: nomeCargo,
-            qnt_processos: 0,
-            tempo: 0,
-          };
-        }
+            if (!mapa[nomeCargo]) {
+              mapa[nomeCargo] = {
+                cargo: nomeCargo,
+                qnt_processos: 0,
+                tempo: 0,
+              };
+            }
 
-        mapa[nomeCargo].qnt_processos += 1;
-        mapa[nomeCargo].tempo += tempoGasto || 0;
-      });
+            mapa[nomeCargo].qnt_processos += 1;
+            mapa[nomeCargo].tempo += tempoGasto || 0;
+          });
+        });
     });
 
     return Object.values(mapa);
@@ -254,21 +266,25 @@ const Graficos = () => {
     const mapa = {};
 
     dados.forEach((item) => {
-      const categoria = item.macroprocesso?.nome || "Sem categoria";
-      const tempo = item.tempoGasto || 0;
+      item.etapas.length > 0 &&
+        item.etapas.forEach((etapa) => {
+          const categoria = item.macroprocesso?.nome || "Sem categoria";
+          const tempo = etapa.tempoGasto || 0;
 
-      if (!mapa[categoria]) {
-        mapa[categoria] = {
-          categoria,
-          qnt_processos: 0,
-          tempo: 0,
-        };
-      }
+          if (!mapa[categoria]) {
+            mapa[categoria] = {
+              macroprocesso: categoria,
+              qnt_processos: 0,
+              tempo: 0,
+            };
+          }
 
-      mapa[categoria].qnt_processos += 1;
-      mapa[categoria].tempo += tempo;
+          mapa[categoria].qnt_processos += 1;
+          mapa[categoria].tempo += tempo;
+        });
     });
 
+    console.log("Object.values(mapa)", Object.values(mapa));
     return Object.values(mapa);
   };
 
@@ -286,11 +302,15 @@ const Graficos = () => {
     };
 
     filtrado.forEach((item) => {
-      totalAtributos.gestao += item.gestao || 0;
-      totalAtributos.inovacao += item.inovacao || 0;
-      totalAtributos.analise += item.analise || 0;
-      totalAtributos.sistematizacao += item.sistematizacao || 0;
-      totalAtributos.auxilio += item.auxilio || 0;
+      if (item.etapas.length > 0) {
+        item.etapas.forEach((etapa) => {
+          totalAtributos.gestao += etapa.gestao ? 1 : 0;
+          totalAtributos.inovacao += etapa.inovacao ? 1 : 0;
+          totalAtributos.analise += etapa.analise ? 1 : 0;
+          totalAtributos.sistematizacao += etapa.sistematizacao ? 1 : 0;
+          totalAtributos.auxilio += etapa.auxilio ? 1 : 0;
+        });
+      }
     });
 
     const total =
@@ -329,7 +349,7 @@ const Graficos = () => {
 
     const data = rawData.filter((item) => item.area?._id === value._id);
     setFilteredData(data);
-    calcularTotais(data);
+    // calcularTotais(data);
   };
 
   const timeColumns = [
@@ -369,7 +389,7 @@ const Graficos = () => {
 
   const categoryColumns = [
     {
-      accessorKey: "categoria",
+      accessorKey: "macroprocesso",
       header: "Macroprocesso",
       muiTableHeadCellProps: {
         sx: {
@@ -539,7 +559,7 @@ const Graficos = () => {
                       </NumberContainer>
                       <NumberContainer>
                         <BigNumber>{atividades}</BigNumber>
-                        <span>ATIVIDADES</span>
+                        <span>PROCESSOS</span>
                       </NumberContainer>
                     </NumbersContainer>
                     <TotalContainer>
@@ -685,7 +705,7 @@ const Graficos = () => {
                 enableExpanding
                 muiTableBodyRowProps={{ sx: { verticalAlign: "top" } }}
                 renderDetailPanel={({ row }) => {
-                  const categoria = row.original.categoria;
+                  const categoria = row.original.macroprocesso;
                   const dataPie = gerarDadosAtributosComPorcentagemPorCategoria(
                     filteredData,
                     categoria
